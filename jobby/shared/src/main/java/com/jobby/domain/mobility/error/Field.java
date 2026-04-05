@@ -1,13 +1,11 @@
 package com.jobby.domain.mobility.error;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class Field {
     @Setter
     private String instance;
