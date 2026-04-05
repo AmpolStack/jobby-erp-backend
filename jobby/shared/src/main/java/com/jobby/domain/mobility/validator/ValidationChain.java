@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 // short-circuit validation
 public class ValidationChain {
+
     private final Queue<Supplier<Result<?, Error>>> validations = new LinkedList<>();
 
     // Add lazy validations
@@ -19,7 +20,6 @@ public class ValidationChain {
         validations.add(validation);
         return this;
     }
-
 
     public ValidationChain add(Result<?, Error> validation) {
         return add(() -> validation);
@@ -203,9 +203,9 @@ public class ValidationChain {
         });
     }
 
-    public <T> ValidationChain validateInternalAnyMatch(T value, T[] threshold, String fieldName) {
+    public <T> ValidationChain validateInternalAnyMatch(T value, T[] options, String fieldName) {
         return add(() -> {
-            if(Arrays.stream(threshold).noneMatch(length -> length.equals(value))){
+            if (Arrays.stream(options).noneMatch(opt -> opt.equals(value))) {
                 return Result.failure(ErrorType.ITS_INVALID_OPTION_PARAMETER,
                         new Field(fieldName, "The value is not within valid parameters"));
             }
@@ -247,7 +247,7 @@ public class ValidationChain {
         for (Supplier<Result<?, Error>> validation : validations) {
             Result<?, Error> result = validation.get(); // it only runs here
             if (result.isFailure()) {
-                return Result.failure(result.getError());
+                return Result.failure(result.error());
             }
         }
         return Result.success(null);

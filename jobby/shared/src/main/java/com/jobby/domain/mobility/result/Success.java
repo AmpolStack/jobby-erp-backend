@@ -1,14 +1,6 @@
 package com.jobby.domain.mobility.result;
 
-import lombok.EqualsAndHashCode;
-
-@EqualsAndHashCode
-public final class Success<T, E> implements Result<T,E> {
-    private final T data;
-
-    public Success(final T data) {
-        this.data = data;
-    }
+public record Success<T, E>(T data) implements Result<T, E> {
 
     @Override
     public boolean isSuccess() {
@@ -16,12 +8,12 @@ public final class Success<T, E> implements Result<T,E> {
     }
 
     @Override
-    public T getData() {
-        return this.data;
+    public E error() {
+        return null;
     }
 
     @Override
-    public E getError() {
-        return null;
+    public String toString() {
+        return "Success{" + "data=" + data + '}';
     }
 }
