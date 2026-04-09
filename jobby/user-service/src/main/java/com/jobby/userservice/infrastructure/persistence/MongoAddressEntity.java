@@ -16,7 +16,7 @@ import java.time.Instant;
 public class MongoAddressEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Long id;
 
     @NotNull
     private MongoMunicipalityEntity municipality;

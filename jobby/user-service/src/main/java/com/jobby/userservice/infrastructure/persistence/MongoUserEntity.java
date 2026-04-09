@@ -18,7 +18,7 @@ import java.util.Set;
 public class MongoUserEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Long id;
 
     private Set<@NotNull MongoContactEntity> contacts;
 

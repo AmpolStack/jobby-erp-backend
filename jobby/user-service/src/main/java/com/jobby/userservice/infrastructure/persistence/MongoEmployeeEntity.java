@@ -17,7 +17,8 @@ import java.time.Instant;
 public class MongoEmployeeEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Long id;
+
     private MongoUserEntity user;
     private MongoAddressEntity address;
     private int sectionalId;

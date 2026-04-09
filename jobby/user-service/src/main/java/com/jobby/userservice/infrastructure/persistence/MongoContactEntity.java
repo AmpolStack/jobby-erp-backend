@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoContactEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Long id;
 
     @NotBlank
     @Size(max = 50, message = "It cannot contain more than 50 characters")

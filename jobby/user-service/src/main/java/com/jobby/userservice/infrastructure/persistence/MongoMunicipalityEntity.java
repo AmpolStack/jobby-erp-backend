@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoMunicipalityEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotNull
     private MongoDepartmentEntity department;

@@ -16,7 +16,7 @@ import java.util.Map;
 public class MongoContactTypeEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotBlank
     @Size(max = 50, message = "The number of characters must be less than or equal to 50")

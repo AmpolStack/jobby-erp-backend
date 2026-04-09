@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoIdentificationTypeEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotBlank
     @Size(max = 10, message = "It cannot contain more than 100 characters")

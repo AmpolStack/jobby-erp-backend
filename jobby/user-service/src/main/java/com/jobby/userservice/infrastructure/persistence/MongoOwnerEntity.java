@@ -17,7 +17,7 @@ import java.util.Map;
 public class MongoOwnerEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Long id;
 
     @NotNull
     private MongoUserEntity user;
