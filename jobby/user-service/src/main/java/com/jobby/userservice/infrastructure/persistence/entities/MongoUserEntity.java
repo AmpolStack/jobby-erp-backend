@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,9 +22,8 @@ public class MongoUserEntity {
 
     private Set<@NotNull MongoContactEntity> contacts;
 
-    @NotNull
-    @Field("identification_type")
-    private MongoIdentificationTypeEntity identificationType;
+    @Field("identification_type_id")
+    private int identificationTypeId;
 
     @Field("first_name")
     @NotBlank

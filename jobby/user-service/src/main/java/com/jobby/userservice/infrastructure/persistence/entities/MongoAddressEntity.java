@@ -1,12 +1,9 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
@@ -21,9 +18,8 @@ public class MongoAddressEntity {
     @NotNull
     private MongoMunicipalityEntity municipality;
 
-    @NotBlank
-    @Size(max = 200, message = "It cannot have more than 200 characters")
-    private String direction;
+    @NotNull
+    private byte[] direction;
 
     @NotNull
     @Field("created_at")
