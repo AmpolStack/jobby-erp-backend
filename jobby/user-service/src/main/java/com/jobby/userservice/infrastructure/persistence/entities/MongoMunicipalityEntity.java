@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoMunicipalityEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotNull
     private MongoDepartmentEntity department;

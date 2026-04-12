@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 public class MongoDepartmentEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotBlank
     @Size(max = 50, message = "It cannot contain more than 50 characters")

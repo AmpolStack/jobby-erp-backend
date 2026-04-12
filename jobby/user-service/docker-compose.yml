@@ -1,7 +1,18 @@
 services:
   mongo:
-    image: mongo
+    image: mongo:latest
     restart: always
+    ports:
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: user_service_db
+    volumes:
+      # We mount the .js script in the initialization directory
+      - ./mongo-init-script.js:/docker-entrypoint-initdb.d/mongo-init-script.js:ro
+      # Volume for persisting data
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
