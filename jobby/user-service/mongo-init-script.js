@@ -17,16 +17,51 @@ db.createCollection("identification_types", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["_id", "name"],
+      required: ["_id", "dian_code", "min_length", "max_length", "name", "expression", "abbreviation", "allow_characters"],
       properties: {
         _id: {
           bsonType: "int",
           description: "Unique identifier (integer)"
         },
+        dian_code: {
+          bsonType: "int",
+          minimum: 10,
+          maximum: 99,
+          description: "DIAN code for the identification type (10-99)"
+        },
+        min_length: {
+          bsonType: "int",
+          minimum: 1,
+          description: "Minimum length for identification number"
+        },
+        max_length: {
+          bsonType: "int",
+          minimum: 1,
+          maximum: 50,
+          description: "Maximum length for identification number (1-50)"
+        },
         name: {
           bsonType: "string",
           maxLength: 10,
           description: "Identification type name, max 10 characters"
+        },
+        expression: {
+          bsonType: "string",
+          maxLength: 200,
+          description: "Validation expression, max 200 characters"
+        },
+        abbreviation: {
+          bsonType: "string",
+          maxLength: 5,
+          description: "Abbreviation, max 5 characters"
+        },
+        allow_characters: {
+          bsonType: "array",
+          description: "Set of allowed characters (each max 15 chars)",
+          items: {
+            bsonType: "string",
+            maxLength: 15
+          }
         }
       },
       additionalProperties: false
@@ -45,7 +80,7 @@ db.createCollection("contact_types", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["_id", "type", "description"],
+      required: ["_id", "type", "description", "expression"],
       properties: {
         _id: {
           bsonType: "int",
@@ -60,6 +95,11 @@ db.createCollection("contact_types", {
           bsonType: "string",
           maxLength: 150,
           description: "Contact type description, max 150 characters"
+        },
+        expression: {
+          bsonType: "string",
+          maxLength: 200,
+          description: "Validation expression, max 200 characters"
         },
         visual_instructions: {
           bsonType: "object",
@@ -141,7 +181,6 @@ db.createCollection("users", {
       bsonType: "object",
       required: [
         "_id",
-        "identification_type",
         "first_name",
         "role",
         "identification_number",
@@ -163,11 +202,15 @@ db.createCollection("users", {
           description: "Set of contact sub-documents",
           items: {
             bsonType: "object",
-            required: ["_id", "name", "value"],
+            required: ["_id", "contact_type_id", "name", "value"],
             properties: {
               _id: {
                 bsonType: "long",
                 description: "Contact identifier (long)"
+              },
+              contact_type_id: {
+                bsonType: "int",
+                description: "Reference to contact_types collection"
               },
               name: {
                 bsonType: "string",
@@ -192,22 +235,9 @@ db.createCollection("users", {
             additionalProperties: false
           }
         },
-        identification_type: {
-          bsonType: "object",
-          required: ["_id", "name"],
-          description: "Embedded identification type",
-          properties: {
-            _id: {
-              bsonType: "int",
-              description: "Identification type ID"
-            },
-            name: {
-              bsonType: "string",
-              maxLength: 10,
-              description: "Identification type name"
-            }
-          },
-          additionalProperties: false
+        identification_type_id: {
+          bsonType: "int",
+          description: "Reference to identification_types collection"
         },
         first_name: {
           bsonType: "string",
@@ -289,12 +319,72 @@ db.createCollection("owners", {
         },
         user: {
           bsonType: "object",
-          required: ["_id"],
-          description: "Reference to the user document",
+          required: [
+            "_id",
+            "first_name",
+            "role",
+            "identification_number",
+            "identification_number_searchable",
+            "email",
+            "email_searchable",
+            "phone",
+            "phone_searchable",
+            "created_at",
+            "modified_at"
+          ],
+          description: "Embedded user document",
           properties: {
             _id: {
               bsonType: "long",
               description: "User identifier"
+            },
+            contacts: {
+              bsonType: "array"
+            },
+            identification_type_id: {
+              bsonType: "int"
+            },
+            first_name: {
+              bsonType: "string",
+              maxLength: 150
+            },
+            last_name: {
+              bsonType: "string",
+              maxLength: 150
+            },
+            role: {
+              bsonType: "string",
+              maxLength: 10
+            },
+            is_active: {
+              bsonType: "bool"
+            },
+            profile_image_url: {
+              bsonType: "string"
+            },
+            identification_number: {
+              bsonType: "binData"
+            },
+            identification_number_searchable: {
+              bsonType: "binData"
+            },
+            email: {
+              bsonType: "binData"
+            },
+            email_searchable: {
+              bsonType: "binData"
+            },
+            phone: {
+              bsonType: "string"
+            },
+            phone_searchable: {
+              bsonType: "string"
+            },
+            created_at: {
+              bsonType: "date"
+            },
+            modified_at: {
+              bsonType: "date"
             }
           }
         },
@@ -347,19 +437,79 @@ db.createCollection("employees", {
         },
         user: {
           bsonType: "object",
-          required: ["_id"],
-          description: "Reference to the user document",
+          required: [
+            "_id",
+            "first_name",
+            "role",
+            "identification_number",
+            "identification_number_searchable",
+            "email",
+            "email_searchable",
+            "phone",
+            "phone_searchable",
+            "created_at",
+            "modified_at"
+          ],
+          description: "Embedded user document",
           properties: {
             _id: {
               bsonType: "long",
               description: "User identifier"
+            },
+            contacts: {
+              bsonType: "array"
+            },
+            identification_type_id: {
+              bsonType: "int"
+            },
+            first_name: {
+              bsonType: "string",
+              maxLength: 150
+            },
+            last_name: {
+              bsonType: "string",
+              maxLength: 150
+            },
+            role: {
+              bsonType: "string",
+              maxLength: 10
+            },
+            is_active: {
+              bsonType: "bool"
+            },
+            profile_image_url: {
+              bsonType: "string"
+            },
+            identification_number: {
+              bsonType: "binData"
+            },
+            identification_number_searchable: {
+              bsonType: "binData"
+            },
+            email: {
+              bsonType: "binData"
+            },
+            email_searchable: {
+              bsonType: "binData"
+            },
+            phone: {
+              bsonType: "string"
+            },
+            phone_searchable: {
+              bsonType: "string"
+            },
+            created_at: {
+              bsonType: "date"
+            },
+            modified_at: {
+              bsonType: "date"
             }
           }
         },
         address: {
           bsonType: "object",
           description: "Embedded address sub-document",
-          required: ["_id", "municipality", "direction"],
+          required: ["_id", "municipality", "direction", "created_at", "modified_at"],
           properties: {
             _id: {
               bsonType: "long",
@@ -402,9 +552,8 @@ db.createCollection("employees", {
               additionalProperties: false
             },
             direction: {
-              bsonType: "string",
-              maxLength: 200,
-              description: "Street address, max 200 characters"
+              bsonType: "binData",
+              description: "Encrypted street address"
             },
             created_at: {
               bsonType: "date",
