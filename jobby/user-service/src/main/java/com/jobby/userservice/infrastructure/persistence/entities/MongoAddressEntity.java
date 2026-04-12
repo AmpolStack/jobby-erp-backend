@@ -26,6 +26,6 @@ public class MongoAddressEntity {
     private Instant createdAt;
 
     @NotNull
-    @Field("created_at")
+    @Field("modified_at")
     private Instant modifiedAt;
 }
