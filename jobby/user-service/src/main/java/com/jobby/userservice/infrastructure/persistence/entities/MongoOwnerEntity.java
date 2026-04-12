@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,24 +8,31 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.time.Instant;
+import java.util.Map;
 
-@Document("employees")
-@Getter
 @Setter
-public class MongoEmployeeEntity {
+@Getter
+@Document("owners")
+public class MongoOwnerEntity {
     @Id
     @Field("_id")
-    private String id;
-    private MongoUserEntity user;
-    private MongoAddressEntity address;
-    private int sectionalId;
+    private Long id;
 
-    @Field("position_name")
-    @NotBlank
-    @Size(max = 100, message = "It cannot have more than 100 characters")
-    private String positionName;
+    @NotNull
+    private MongoUserEntity user;
+
+    @Field("alternative_email")
+    private byte[] alternativeEmail;
+
+    @Field("alternative_email_searchable")
+    private byte[] alternativeEmailSearchable;
+
+
+    private Map<
+            @NotBlank @Size(max = 20, message = "It cannot have more than 20 characters") String,
+            @NotBlank @Size(max = 100, message = "It cannot have more than 100 characters")String>
+            secureParameters;
 
     @NotNull
     @Field("created_at")

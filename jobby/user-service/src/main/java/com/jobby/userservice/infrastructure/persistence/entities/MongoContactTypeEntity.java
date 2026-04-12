@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.persistence;
+package com.jobby.userservice.infrastructure.persistence.entities;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class MongoContactTypeEntity {
     @Id
     @Field("_id")
-    private String id;
+    private Integer id;
 
     @NotBlank
     @Size(max = 50, message = "The number of characters must be less than or equal to 50")
@@ -25,6 +25,10 @@ public class MongoContactTypeEntity {
     @NotBlank
     @Size(max = 150, message = "It cannot contain more than 150 characters")
     private String description;
+
+    @NotBlank
+    @Size(max = 200, message = "It cannot contain more than 200 characters")
+    private String expression;
 
     @Field("visual_instructions")
     private Map<
