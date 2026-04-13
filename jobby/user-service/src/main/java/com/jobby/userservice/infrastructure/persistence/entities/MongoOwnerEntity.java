@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
@@ -19,7 +20,7 @@ public class MongoOwnerEntity {
     @Field("_id")
     private Long id;
 
-    @NotNull
+    @Transient
     private MongoUserEntity user;
 
     @Field("alternative_email")
