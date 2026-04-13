@@ -1,3 +1,15 @@
 spring:
   application:
     name: user-service
+  data:
+    mongodb:
+      username: jobby-root
+      password: jRq2)24
+      database: user_service_db
+      port: 27017
+      host: localhost
+
+app:
+  id:
+    datacenter-id: 1
+    worker-id: 1
