@@ -27,7 +27,7 @@ public class IdentificationNumber {
                 .validateGreaterOrEqualsThan(number.length(), type.getMinLength(),
                         FIELD_NAME + " (" + type.getAbbreviation() + ")")
                 .validateSmallerOrEqualsThan(number.length(), type.getMaxLength(),
-                        FIELD_NAME + "(" + type.getAbbreviation() + ")")
+                        FIELD_NAME + " (" + type.getAbbreviation() + ")")
                 .add(ValidExpression(type.getExpression(), type.getAllowCharacters()))
                 .build();
     }

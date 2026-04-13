@@ -1,15 +1,13 @@
 package com.jobby.userservice.domain.ports;
 
+import com.jobby.domain.mobility.error.Error;
+import com.jobby.domain.mobility.result.Result;
 import com.jobby.userservice.domain.models.Owner;
+import com.jobby.userservice.domain.models.User;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface OwnerRepository {
-    Optional<Owner> findById(Long id);
-    List<Owner> findAll();
-    Owner save(Owner owner);
-    void deleteById(Long id);
-    boolean existsById(Long id);
-    Optional<Owner> findByUserId(Long userId);
+    Result<Owner, Error> create(Owner owner);
 }

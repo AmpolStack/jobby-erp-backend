@@ -23,8 +23,11 @@ public class ImageUrl {
     private static final String URL_REGEX = "^https://[\\w.-]+\\.[a-zA-Z]{2,}(/[\\w./%-]+)?$";
 
     public Result<Void, Error> validate() {
+        if(value == null){
+            return Result.success(null);
+        }
+
         return ValidationChain.create()
-                .validateNotBlank(value, "image-url")
                 .validateIf(!value.matches(URL_REGEX), () ->
                         Result.failure(ErrorType.VALIDATION_ERROR, new Field("image-url", "The provided URL does not correspond to valid origins"))
                 )
