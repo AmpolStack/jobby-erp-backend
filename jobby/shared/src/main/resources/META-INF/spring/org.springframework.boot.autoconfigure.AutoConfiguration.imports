@@ -5,3 +5,4 @@ com.jobby.infrastructure.autoconfiguration.MacAutoConfiguration
 com.jobby.infrastructure.autoconfiguration.MessagePublisherAutoConfiguration
 com.jobby.infrastructure.autoconfiguration.SafeValidatorAutoConfiguration
 com.jobby.infrastructure.autoconfiguration.IdGeneratorAutoConfiguration
+com.jobby.infrastructure.autoconfiguration.TransactionAutoConfiguration
