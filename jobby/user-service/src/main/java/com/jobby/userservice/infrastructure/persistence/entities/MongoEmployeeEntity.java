@@ -20,6 +20,7 @@ public class MongoEmployeeEntity {
     private Long id;
 
     private MongoAddressEntity address;
+    @Field("sectional_id")
     private int sectionalId;
 
     @Field("position_name")

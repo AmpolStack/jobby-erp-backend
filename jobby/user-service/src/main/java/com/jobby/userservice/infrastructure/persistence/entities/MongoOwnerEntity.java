@@ -30,6 +30,7 @@ public class MongoOwnerEntity {
     private byte[] alternativeEmailSearchable;
 
 
+    @Field("secure_parameters")
     private Map<
             @NotBlank @Size(max = 20, message = "It cannot have more than 20 characters") String,
             @NotBlank @Size(max = 100, message = "It cannot have more than 100 characters")String>
