@@ -2,37 +2,65 @@ package com.jobby.userservice.application.useCases;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
+import com.jobby.domain.ports.IdGenerator;
 import com.jobby.userservice.application.commands.CreateOwnerCommand;
+import com.jobby.userservice.application.commands.CreateUserCommand;
 import com.jobby.userservice.application.mapper.GetOwnerQueryMapper;
 import com.jobby.userservice.application.responses.GetOwnerQuery;
 import com.jobby.userservice.domain.factory.OwnerFactory;
 import com.jobby.userservice.domain.factory.UserFactory;
 import com.jobby.userservice.domain.models.IdentificationType;
+import com.jobby.userservice.domain.models.Owner;
+import com.jobby.userservice.domain.models.User;
+import com.jobby.userservice.domain.ports.IdentificationTypeRepository;
 import com.jobby.userservice.domain.ports.OwnerRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.Set;
+import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class CreateOwnerUseCase {
 
-    private final OwnerRepository repository;
+    private final OwnerRepository ownerRepository;
     private final GetOwnerQueryMapper ownerQueryMapper;
-
-    public CreateOwnerUseCase(OwnerRepository repository,GetOwnerQueryMapper ownerQueryMapper) {
-        this.repository = repository;
-        this.ownerQueryMapper = ownerQueryMapper;
-    }
+    private final IdGenerator idGenerator;
+    private final IdentificationTypeRepository identificationTypeRepository;
 
     public Result<GetOwnerQuery, Error> execute(CreateOwnerCommand command){
-        var inputUser = command.getUser();
+        var userCommand = command.getUser();
 
-        return UserFactory.create(1L, 1, inputUser.getFirstName(),
-                inputUser.getFirstName(), "owner",  inputUser.getIdentificationNumber(),
-                new IdentificationType(1, 1, "CC", 5, 10, "^\\d+$", "CC", Set.of("numbers")),
-                inputUser.getEmail(), inputUser.getPhone())
-                .flatMap((user) -> OwnerFactory.create(1L, null, command.getSecureParameters(), user))
-                .flatMap(this.repository::create)
+        return this.identificationTypeRepository
+                .findById(userCommand.getIdentificationTypeId())
+                .flatMap(identificationType ->
+                        this.setupUser(userCommand, identificationType))
+                .flatMap(user ->
+                        this.setupOwner(command.getSecureParameters(), user))
+                .flatMap(this.ownerRepository::create)
                 .map(this.ownerQueryMapper::toGetOwnerQuery);
+    }
 
+
+    private Result<User, Error> setupUser(CreateUserCommand userCommand,
+                                           IdentificationType identificationType){
+        return this.idGenerator.next()
+                .flatMap(id -> UserFactory.create(id,
+                        userCommand.getIdentificationTypeId(),
+                        userCommand.getFirstName(),
+                        userCommand.getLastName(),
+                        "owner",
+                        userCommand.getIdentificationNumber(),
+                        identificationType,
+                        userCommand.getEmail(),
+                        userCommand.getPhone()));
+    }
+
+    private Result<Owner, Error> setupOwner(Map<String, String> secureParameters,
+                                            User user){
+        return this.idGenerator.next()
+                .flatMap(id -> OwnerFactory.create(id,
+                        null,
+                        secureParameters,
+                        user));
     }
 }
