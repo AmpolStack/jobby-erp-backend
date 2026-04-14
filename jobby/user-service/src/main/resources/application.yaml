@@ -8,7 +8,7 @@ spring:
       database: user_service_db
       port: 27017
       host: localhost
-
+      authentication-database: admin
 app:
   id:
     datacenter-id: 1
