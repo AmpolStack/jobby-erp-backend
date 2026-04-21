@@ -1,4 +1,4 @@
-package com.jobby.userservice.application.responses;
+package com.jobby.userservice.application.queries;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,5 +12,6 @@ import lombok.Setter;
 public class GetContactQuery {
     private String name;
     private String description;
+    private boolean isPublic;
     private String value;
 }

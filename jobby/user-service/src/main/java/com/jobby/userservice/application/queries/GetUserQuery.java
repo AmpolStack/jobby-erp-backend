@@ -1,4 +1,4 @@
-package com.jobby.userservice.application.responses;
+package com.jobby.userservice.application.queries;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

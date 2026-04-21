@@ -1,7 +1,5 @@
-package com.jobby.userservice.application.responses;
+package com.jobby.userservice.application.queries;
 
-import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.domain.vo.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +13,4 @@ import java.time.Instant;
 public class GetOwnerQuery {
     private GetUserQuery user;
     private String alternativeEmail;
-    private Instant createdAt;
-    private Instant modifiedAt;
 }
