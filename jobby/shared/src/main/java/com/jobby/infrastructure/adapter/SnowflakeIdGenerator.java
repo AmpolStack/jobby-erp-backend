@@ -2,7 +2,7 @@ package com.jobby.infrastructure.adapter;
 
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
-import com.jobby.domain.configurations.IdConfig;
+import com.jobby.infrastructure.configurations.IdConfig;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
