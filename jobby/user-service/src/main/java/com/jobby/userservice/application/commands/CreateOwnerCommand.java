@@ -1,6 +1,5 @@
 package com.jobby.userservice.application.commands;
 
-import com.jobby.userservice.domain.models.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
