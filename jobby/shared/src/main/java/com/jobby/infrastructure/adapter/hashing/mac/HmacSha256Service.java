@@ -1,34 +1,35 @@
 package com.jobby.infrastructure.adapter.hashing.mac;
 
-import com.jobby.domain.configurations.MacConfig;
+import com.jobby.infrastructure.configurations.MacConfig;
 import com.jobby.domain.mobility.error.Error;
-import com.jobby.domain.mobility.error.ErrorType;
-import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.domain.ports.security.hashing.mac.MacBuilder;
 import com.jobby.domain.ports.security.hashing.mac.MacService;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Base64;
+import com.jobby.infrastructure.adapter.CryptoUtils;
+import lombok.AllArgsConstructor;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+@AllArgsConstructor
 public class HmacSha256Service implements MacService {
-    private static final String ALGORITHM = "HmacSHA256";
-    private static final Integer[] VALID_KEY_LENGTHS_BITS = {128, 160, 192, 224, 256, 384, 512};
-    private static final String[] VALID_ALGORITHMS = {"HmacSHA1", "HmacSHA512", "HmacSHA256"};
 
     private final MacBuilder macBuilder;
+    private final MacConfig config;
 
-    public HmacSha256Service(MacBuilder macBuilder) {
-        this.macBuilder = macBuilder;
-    }
 
     @Override
-    public Result<byte[], Error> generateMac(String data, MacConfig config) {
-        return validateConfig(config)
-                .flatMap(v -> validateAndParseKey(config.getSecretKey()))
+    public Result<byte[], Error> generateMac(String data) {
+        if(data == null || data.isBlank()){
+            return Result.success(new byte[0]);
+        }
+
+        return MacCryptography.validateConfig(config)
+                .flatMap(v -> CryptoUtils.validateAndParseKey(
+                        config.getAlgorithm(),
+                        config.getSecretKey(),
+                        MacCryptography.VALID_KEY_LENGTHS_BITS))
                 .flatMap(key -> ValidationChain.create()
                         .validateInternalNotBlank(data, "data")
                         .build()
@@ -42,44 +43,8 @@ public class HmacSha256Service implements MacService {
     }
 
     @Override
-    public Result<Boolean, Error> verifyMac(String data, byte[] hmac, MacConfig config) {
-        return generateMac(data, config)
-                .flatMap(generatedHmac -> {
-                    boolean isValid = Arrays.equals(generatedHmac, hmac);
-                    return Result.success(isValid);
-                });
-    }
-
-    private Result<Void, Error> validateConfig(MacConfig config) {
-        return ValidationChain
-                .create()
-                    .validateInternalAnyMatch(
-                            config.getAlgorithm(),
-                            VALID_ALGORITHMS,
-                         "algorithm")
-                    .build();
-    }
-
-    private Result<Key, Error> validateAndParseKey(String keyBase64) {
-        final int BIT_MULTIPLIER = 8;
-        return ValidationChain.create()
-                .validateInternalNotBlank(keyBase64, "key-base-64")
-                .build()
-                .flatMap(v -> {
-                    byte[] keyBytes;
-                    try {
-                        keyBytes = Base64.getDecoder().decode(keyBase64);
-                    } catch (IllegalArgumentException e) {
-                        return Result.failure(ErrorType.ITS_SERIALIZATION_ERROR,
-                                new Field("key-base-64", "is invalid in base64"));
-                    }
-
-                    var keyLengthInBits = keyBytes.length * BIT_MULTIPLIER;
-
-                    return ValidationChain.create()
-                            .validateInternalAnyMatch(keyLengthInBits, VALID_KEY_LENGTHS_BITS, "key-base-64-bits")
-                            .build()
-                            .map(v2 -> new SecretKeySpec(keyBytes, ALGORITHM));
-                });
+    public Result<Boolean, Error> verifyMac(String data, byte[] hmac) {
+        return generateMac(data)
+                .map(generatedHmac -> Arrays.equals(generatedHmac, hmac));
     }
 }

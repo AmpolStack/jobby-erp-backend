@@ -5,17 +5,20 @@ import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.domain.ports.security.hashing.HashingService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import java.nio.charset.StandardCharsets;
 
 public class BcryptHashingService implements HashingService {
 
     private static final int VALID_LIMIT_OF_INPUT_BYTES = 72;
+    
+    private final BCryptPasswordEncoder encoder;
 
+    public BcryptHashingService() {
+        this.encoder = new BCryptPasswordEncoder();
+    }
 
     @Override
     public Result<String, Error> hash(String input) {
-        //noinspection DataFlowIssue
         return ValidationChain.create()
                 .validateInternalNotBlank(input, "hash-input")
                 .validateIf(input != null, () ->
@@ -26,10 +29,7 @@ public class BcryptHashingService implements HashingService {
                                         "hash-input-bytes")
                                 .build())
                 .build()
-                .map(x -> {
-                    var encoder = new BCryptPasswordEncoder();
-                    return encoder.encode(input);
-                });
+                .map(x -> encoder.encode(input));
     }
 
     @Override
@@ -38,10 +38,6 @@ public class BcryptHashingService implements HashingService {
                 .validateInternalNotBlank(plain, "plain-input")
                 .validateInternalNotBlank(hash, "hash-input")
                 .build()
-                .map(x -> {
-                    var encoder = new BCryptPasswordEncoder();
-                     return encoder.matches(plain, hash);
-                });
+                .map(x -> encoder.matches(plain, hash));
     }
-
 }
