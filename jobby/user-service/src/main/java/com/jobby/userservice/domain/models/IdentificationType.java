@@ -1,16 +1,10 @@
 package com.jobby.userservice.domain.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import lombok.*;
 import java.util.Set;
 
-@Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdentificationType {
     private Integer id;
     private int dianCode;
@@ -20,4 +14,23 @@ public class IdentificationType {
     private String expression;
     private String abbreviation;
     private Set<String> allowCharacters;
+
+    public static IdentificationType reconstruct(int id,
+                                                 int dianCode,
+                                                 String name,
+                                                 int minLength,
+                                                 int maxLength,
+                                                 String expression,
+                                                 String abbreviation,
+                                                 Set<String> allowCharacters){
+        return new IdentificationType(id,
+                dianCode,
+                name,
+                minLength,
+                maxLength,
+                expression,
+                abbreviation,
+                allowCharacters);
+    }
+
 }

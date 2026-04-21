@@ -1,19 +1,24 @@
 package com.jobby.userservice.domain.models;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import java.util.Map;
 
-@Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ContactType {
     private Integer id;
     private String type;
     private String description;
     private String expression;
     private Map<String, String> visualInstructions;
+
+    public static ContactType reconstruct(int id,
+                                          String type,
+                                          String description,
+                                          String expression,
+                                          Map<String, String> visualInstructions){
+        return new ContactType(id,type,description, expression, visualInstructions);
+    }
 }

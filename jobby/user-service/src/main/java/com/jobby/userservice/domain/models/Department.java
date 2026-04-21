@@ -1,16 +1,15 @@
 package com.jobby.userservice.domain.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Department {
     private Integer id;
     private String name;
     private int daneCode;
+
+    public static Department reconstruct(int id, String name, int daneCode){
+        return new Department(id, name, daneCode);
+    }
 }
