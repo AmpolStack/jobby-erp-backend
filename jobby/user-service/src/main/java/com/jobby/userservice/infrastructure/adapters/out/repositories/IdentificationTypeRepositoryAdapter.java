@@ -6,7 +6,7 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.userservice.domain.models.IdentificationType;
 import com.jobby.userservice.domain.ports.IdentificationTypeRepository;
-import com.jobby.userservice.infrastructure.mappers.IdentificationTypeMapper;
+import com.jobby.userservice.infrastructure.mappers.entities.MongoIdentificationTypeMapper;
 import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoIdentificationTypeRepository;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +16,9 @@ import java.util.List;
 public class IdentificationTypeRepositoryAdapter implements IdentificationTypeRepository {
 
     private final SpringDataMongoIdentificationTypeRepository repository;
-    private final IdentificationTypeMapper mapper;
+    private final MongoIdentificationTypeMapper mapper;
 
-    public IdentificationTypeRepositoryAdapter(SpringDataMongoIdentificationTypeRepository repository, IdentificationTypeMapper mapper) {
+    public IdentificationTypeRepositoryAdapter(SpringDataMongoIdentificationTypeRepository repository, MongoIdentificationTypeMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }

@@ -6,7 +6,7 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.userservice.domain.models.ContactType;
 import com.jobby.userservice.domain.ports.ContactTypeRepository;
-import com.jobby.userservice.infrastructure.mappers.ContactTypeMapper;
+import com.jobby.userservice.infrastructure.mappers.entities.MongoContactTypeMapper;
 import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoContactTypesRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,9 +16,9 @@ import java.util.List;
 public class ContactTypeRepositoryAdapter implements ContactTypeRepository {
 
     private final SpringDataMongoContactTypesRepository repository;
-    private final ContactTypeMapper mapper;
+    private final MongoContactTypeMapper mapper;
 
-    public ContactTypeRepositoryAdapter(SpringDataMongoContactTypesRepository repository, ContactTypeMapper mapper) {
+    public ContactTypeRepositoryAdapter(SpringDataMongoContactTypesRepository repository, MongoContactTypeMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
