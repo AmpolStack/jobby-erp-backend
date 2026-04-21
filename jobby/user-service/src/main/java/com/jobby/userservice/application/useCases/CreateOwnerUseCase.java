@@ -1,66 +1,54 @@
 package com.jobby.userservice.application.useCases;
 
 import com.jobby.domain.mobility.error.Error;
+import com.jobby.domain.mobility.error.ErrorType;
+import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.IdGenerator;
 import com.jobby.userservice.application.commands.CreateOwnerCommand;
 import com.jobby.userservice.application.commands.CreateUserCommand;
+import com.jobby.userservice.application.mapper.CreateOwnerCommandMapper;
+import com.jobby.userservice.application.mapper.CreateUserCommandMapper;
 import com.jobby.userservice.application.mapper.GetOwnerQueryMapper;
-import com.jobby.userservice.application.responses.GetOwnerQuery;
-import com.jobby.userservice.domain.factory.OwnerFactory;
-import com.jobby.userservice.domain.factory.UserFactory;
-import com.jobby.userservice.domain.models.IdentificationType;
-import com.jobby.userservice.domain.models.Owner;
-import com.jobby.userservice.domain.models.User;
+import com.jobby.userservice.application.queries.GetOwnerQuery;
 import com.jobby.userservice.domain.ports.IdentificationTypeRepository;
 import com.jobby.userservice.domain.ports.OwnerRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.Map;
 
 @Service
 @AllArgsConstructor
 public class CreateOwnerUseCase {
 
     private final OwnerRepository ownerRepository;
-    private final GetOwnerQueryMapper ownerQueryMapper;
-    private final IdGenerator idGenerator;
     private final IdentificationTypeRepository identificationTypeRepository;
+    private final IdGenerator idGenerator;
+    private final GetOwnerQueryMapper ownerQueryMapper;
+    private final CreateUserCommandMapper createUserCommandMapper;
+    private final CreateOwnerCommandMapper createOwnerCommandMapper;
 
-    public Result<GetOwnerQuery, Error> execute(CreateOwnerCommand command){
-        var userCommand = command.getUser();
-
-        return this.identificationTypeRepository
-                .findById(userCommand.getIdentificationTypeId())
-                .flatMap(identificationType ->
-                        this.setupUser(userCommand, identificationType))
-                .flatMap(user ->
-                        this.setupOwner(command.getSecureParameters(), user))
-                .flatMap(this.ownerRepository::create)
-                .map(this.ownerQueryMapper::toGetOwnerQuery);
+    public Result<GetOwnerQuery, Error> execute(CreateOwnerCommand command) {
+        var userCmd = command.getUser();
+        return validateUniqueness(userCmd)
+                .flatMap(v -> identificationTypeRepository.findById(userCmd.getIdentificationTypeId()))
+                .flatMap(identificationType -> idGenerator.next()
+                        .flatMap(userId -> createUserCommandMapper.toUser(userCmd, userId, "owner", identificationType)))
+                .flatMap(user -> idGenerator.next()
+                        .flatMap(ownerId -> createOwnerCommandMapper.toOwner(command, ownerId, user.getId()))
+                        .flatMap(owner -> ownerRepository.save(owner, user)
+                                .map(v -> ownerQueryMapper.toGetOwnerQuery(owner, user))));
     }
 
-
-    private Result<User, Error> setupUser(CreateUserCommand userCommand,
-                                           IdentificationType identificationType){
-        return this.idGenerator.next()
-                .flatMap(id -> UserFactory.create(id,
-                        userCommand.getIdentificationTypeId(),
-                        userCommand.getFirstName(),
-                        userCommand.getLastName(),
-                        "owner",
-                        userCommand.getIdentificationNumber(),
-                        identificationType,
-                        userCommand.getEmail(),
-                        userCommand.getPhone()));
-    }
-
-    private Result<Owner, Error> setupOwner(Map<String, String> secureParameters,
-                                            User user){
-        return this.idGenerator.next()
-                .flatMap(id -> OwnerFactory.create(id,
-                        null,
-                        secureParameters,
-                        user));
+    private Result<Void, Error> validateUniqueness(CreateUserCommand userCmd) {
+        return ownerRepository.existByEmail(userCmd.getEmail())
+                .flatMap(exist -> exist
+                        ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "A user with that email address already exists."))
+                        : ownerRepository.existByPhone(userCmd.getPhone()))
+                .flatMap(exist -> exist
+                        ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "There is already a registered user with that phone number."))
+                        : ownerRepository.existByIdentificationNumber(userCmd.getIdentificationNumber()))
+                .flatMap(exist -> exist
+                        ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "A user with that identification number is already registered."))
+                        : Result.success());
     }
 }
