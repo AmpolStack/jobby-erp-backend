@@ -1,6 +1,6 @@
 package com.jobby.infrastructure.autoconfiguration;
 
-import com.jobby.domain.configurations.IdConfig;
+import com.jobby.infrastructure.configurations.IdConfig;
 import com.jobby.infrastructure.adapter.SnowflakeIdGenerator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
