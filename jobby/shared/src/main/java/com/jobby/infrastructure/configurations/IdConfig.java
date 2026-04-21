@@ -1,4 +1,4 @@
-package com.jobby.domain.configurations;
+package com.jobby.infrastructure.configurations;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
