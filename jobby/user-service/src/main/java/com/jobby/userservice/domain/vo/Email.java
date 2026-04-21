@@ -5,24 +5,25 @@ import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Email {
     private String email;
-    private static final String REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\n";
+    private static final String REGEX ="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$";
 
-    public Result<Void, Error> validate(){
-        return ValidationChain.create().validateNotBlank(this.getEmail(), "email")
-                .validateIf(this.getEmail().matches(REGEX)
-                , () -> Result.failure(ErrorType.VALIDATION_ERROR,
+    public static Result<Email, Error> of(String email){
+        return ValidationChain.create()
+                .validateNotBlank(email, "email")
+                .validateIf(email.matches(REGEX)
+                        , () -> Result.failure(ErrorType.VALIDATION_ERROR,
                                 new Field("email", "The email address is invalid.")))
-                .build();
+                .build()
+                .map(v -> new Email(email));
+    }
+
+    public static Email on(String email){
+        return new Email(email);
     }
 }

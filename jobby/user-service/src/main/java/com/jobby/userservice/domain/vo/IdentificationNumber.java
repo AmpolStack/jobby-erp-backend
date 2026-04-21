@@ -6,33 +6,37 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.IdentificationType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import java.util.Set;
 
-@Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdentificationNumber {
     private String number;
-
     private static final String FIELD_NAME = "identification number";
 
-    public Result<Void, Error> validate(IdentificationType type){
+    public static Result<IdentificationNumber, Error> of(String number,
+                                                         IdentificationType type){
         return ValidationChain.create()
                 .validateNotBlank(number, FIELD_NAME)
                 .validateGreaterOrEqualsThan(number.length(), type.getMinLength(),
                         FIELD_NAME + " (" + type.getAbbreviation() + ")")
                 .validateSmallerOrEqualsThan(number.length(), type.getMaxLength(),
                         FIELD_NAME + " (" + type.getAbbreviation() + ")")
-                .add(ValidExpression(type.getExpression(), type.getAllowCharacters()))
-                .build();
+                .add(ValidExpression(number,
+                        type.getExpression(),
+                        type.getAllowCharacters()))
+                .build()
+                .map(v -> new IdentificationNumber(number));
     }
 
-    private Result<Void, Error> ValidExpression(String regex, Set<String> allowCharacters) {
+    public static IdentificationNumber on(String number){
+        return new IdentificationNumber(number);
+    }
+
+    private static Result<Void, Error> ValidExpression(String number,
+                                                       String regex,
+                                                       Set<String> allowCharacters) {
         if(number.matches(regex)){
             return Result.success(null);
         }
