@@ -13,3 +13,12 @@ app:
   id:
     datacenter-id: 1
     worker-id: 1
+  security:
+    encryption:
+      secret-key: "7Kx9mP2vN4bQ8wR5tY1cF6hJ3lA0sD9eG2iU4oX7zV5="
+      iv:
+        length: 12
+        t-len: 128
+    mac:
+      algorithm: HmacSHA256
+      secret-key: "mK3nR8vB2xL5pW9jT4qY7cH1sA0fD6gE2uI4oN8zM5w="
