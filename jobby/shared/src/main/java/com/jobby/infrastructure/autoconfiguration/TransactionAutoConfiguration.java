@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.autoconfiguration;
 
+import com.jobby.infrastructure.transaction.TransactionExecutor;
 import com.jobby.infrastructure.transaction.TransactionalContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -11,5 +12,11 @@ public class TransactionAutoConfiguration {
     @ConditionalOnMissingBean
     public TransactionalContext persistenceTransactionContext() {
         return new TransactionalContext();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TransactionExecutor transactionExecutor(TransactionalContext context){
+        return new TransactionExecutor(context);
     }
 }
