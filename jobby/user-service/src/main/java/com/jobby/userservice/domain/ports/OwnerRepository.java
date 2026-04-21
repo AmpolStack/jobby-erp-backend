@@ -5,9 +5,9 @@ import com.jobby.domain.mobility.result.Result;
 import com.jobby.userservice.domain.models.Owner;
 import com.jobby.userservice.domain.models.User;
 
-import java.util.List;
-import java.util.Optional;
-
 public interface OwnerRepository {
-    Result<Owner, Error> create(Owner owner);
+    Result<Void, Error> save(Owner owner, User user);
+    Result<Boolean, Error> existByEmail(String email);
+    Result<Boolean, Error> existByPhone(String email);
+    Result<Boolean, Error> existByIdentificationNumber(String identificationNumber);
 }
