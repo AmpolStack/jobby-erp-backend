@@ -14,11 +14,12 @@ public class TransactionalContext {
         if(response.isFailure()){
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
+
         return response;
     }
 
     @Transactional(readOnly = true)
-    public <E> Result<E, com.jobby.domain.mobility.error.Error> runReadOnly(Supplier<Result<E, Error>> supplier){
+    public <E> Result<E, Error> runReadOnly(Supplier<Result<E, Error>> supplier){
         return supplier.get();
     }
 }
