@@ -19,8 +19,9 @@ public class MongoEmployeeEntity {
     @Field("_id")
     private Long id;
 
-    private MongoUserEntity user;
     private MongoAddressEntity address;
+
+    @Field("sectional_id")
     private int sectionalId;
 
     @Field("position_name")

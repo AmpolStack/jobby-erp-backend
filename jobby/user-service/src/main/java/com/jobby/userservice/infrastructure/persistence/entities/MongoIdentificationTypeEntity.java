@@ -6,8 +6,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -24,14 +22,16 @@ public class MongoIdentificationTypeEntity {
     private int dianCode;
 
     @Min(value = 1, message = "It cannot be less than 1")
+    @Field("min_length")
     private int minLength;
 
     @Min(value = 1, message = "It cannot be less than 1")
     @Max(value = 50, message = "It cannot be greater than 50")
+    @Field("max_length")
     private int maxLength;
 
     @NotBlank
-    @Size(max = 10, message = "It cannot contain more than 100 characters")
+    @Size(max = 50, message = "It cannot contain more than 100 characters")
     private String name;
 
     @NotBlank

@@ -71,41 +71,47 @@ public class ValidationChain {
 
     public ValidationChain validateGreaterThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value < threshold) {
-                return Result.failure(ErrorType.VALIDATION_ERROR,
-                        new Field(fieldName, fieldName + " is less than " + threshold));
+
+            if (value > threshold) {
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field(fieldName, fieldName + " is less or equals than " + threshold));
         });
     }
 
     public ValidationChain validateSmallerThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value > threshold) {
-                return Result.failure(ErrorType.VALIDATION_ERROR,
-                        new Field(fieldName, fieldName + " is bigger than " + threshold));
+
+            if(value < threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field(fieldName, fieldName + " is bigger or equals than " + threshold));
         });
     }
 
     public ValidationChain validateGreaterOrEqualsThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value <= threshold) {
-                return Result.failure(ErrorType.VALIDATION_ERROR,
-                        new Field(fieldName, fieldName + " is less than " + threshold));
+            if(value >= threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.VALIDATION_ERROR,
+                        new Field(fieldName, fieldName + " is less than " + threshold));
         });
     }
 
     public ValidationChain validateSmallerOrEqualsThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value >= threshold) {
-                return Result.failure(ErrorType.VALIDATION_ERROR,
-                        new Field(fieldName, fieldName + " is bigger than " + threshold));
+            if(value <= threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field(fieldName, fieldName + " is bigger than " + threshold));
         });
     }
 
@@ -155,51 +161,58 @@ public class ValidationChain {
 
     public ValidationChain validateInternalGreaterThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value < threshold) {
-                return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
-                        new Field(fieldName, fieldName + " is less than " + threshold));
+
+            if(value > threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
+                    new Field(fieldName, fieldName + " is less or equals than " + threshold));
         });
     }
 
     public ValidationChain validateInternalGreaterThan(long value, long threshold, String fieldName) {
         return add(() -> {
-            if (value < threshold) {
-                return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
-                        new Field(fieldName, fieldName + " is less than " + threshold));
+            if(value > threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
+                    new Field(fieldName, fieldName + " is less  or equals than " + threshold));
         });
     }
 
     public ValidationChain validateInternalSmallerThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value > threshold) {
-                return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
-                        new Field(fieldName, fieldName + " is bigger than " + threshold));
+            if (value < threshold) {
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
+                    new Field(fieldName, fieldName + " is bigger or equals than " + threshold));
         });
     }
 
     public ValidationChain validateInternalGreaterOrEqualsThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value <= threshold) {
-                return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
-                        new Field(fieldName, fieldName + " is less than " + threshold));
+
+            if(value >= threshold){
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
+                    new Field(fieldName, fieldName + " is less than " + threshold));
         });
     }
 
     public ValidationChain validateInternalSmallerOrEqualsThan(int value, int threshold, String fieldName) {
         return add(() -> {
-            if (value >= threshold) {
-                return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
-                        new Field(fieldName, fieldName + " is bigger than " + threshold));
+            if (value <= threshold) {
+                return Result.success(null);
             }
-            return Result.success(null);
+
+            return Result.failure(ErrorType.ITN_VALIDATION_RANGE,
+                    new Field(fieldName, fieldName + " is bigger than " + threshold));
         });
     }
 

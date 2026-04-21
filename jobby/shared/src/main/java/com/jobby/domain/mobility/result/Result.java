@@ -21,6 +21,7 @@ public sealed interface Result<T, E> permits Success, Failure {
     E error();
 
     // --- Factory methods ---
+    static <E> Result<Void,E> success() {return new Success<>(null);}
 
     static <T, E> Result<T, E> success(T data) {
         return new Success<>(data);
@@ -75,11 +76,26 @@ public sealed interface Result<T, E> permits Success, Failure {
         return Result.failure(this.error());
     }
 
+    default Result<T, E> peek(Consumer<T> action) {
+        if (this.isSuccess()) {
+            action.accept(this.data());
+        }
+        return this;
+    }
+
     default void fold(Consumer<T> onSuccess, Consumer<E> onFailure) {
         if (this.isSuccess()) {
             onSuccess.accept(this.data());
         } else {
             onFailure.accept(this.error());
+        }
+    }
+
+    default <R> R fold(Function<T, R> onSuccess, Function<E, R> onFailure) {
+        if (this.isSuccess()) {
+            return onSuccess.apply(this.data());
+        } else {
+            return onFailure.apply(this.error());
         }
     }
 

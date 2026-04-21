@@ -4,13 +4,18 @@
 // Executed automatically by /docker-entrypoint-initdb.d/ on first container start.
 // Runs inside the database defined by MONGO_INITDB_DATABASE env variable.
 // =============================================================================
+//
+// All field names use snake_case in the database.
+// Fields in Java entities are mapped via @Field("snake_case_name").
+// Spring Data MongoDB auto-adds a "_class" field for type discrimination.
+// =============================================================================
 
 print("==========================================");
 print(" Initializing User Service Collections");
 print("==========================================");
 
 // ---------------------------------------------------------------------------
-// 1. identification_types
+// 1. identification_types  (MongoIdentificationTypeEntity)
 // ---------------------------------------------------------------------------
 print("[1/6] Creating 'identification_types' collection...");
 db.createCollection("identification_types", {
@@ -22,6 +27,10 @@ db.createCollection("identification_types", {
         _id: {
           bsonType: "int",
           description: "Unique identifier (integer)"
+        },
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
         },
         dian_code: {
           bsonType: "int",
@@ -42,8 +51,8 @@ db.createCollection("identification_types", {
         },
         name: {
           bsonType: "string",
-          maxLength: 10,
-          description: "Identification type name, max 10 characters"
+          maxLength: 50,
+          description: "Identification type name, max 50 characters"
         },
         expression: {
           bsonType: "string",
@@ -73,7 +82,7 @@ db.createCollection("identification_types", {
 print("  ✓ 'identification_types' created.");
 
 // ---------------------------------------------------------------------------
-// 2. contact_types
+// 2. contact_types  (MongoContactTypeEntity)
 // ---------------------------------------------------------------------------
 print("[2/6] Creating 'contact_types' collection...");
 db.createCollection("contact_types", {
@@ -85,6 +94,10 @@ db.createCollection("contact_types", {
         _id: {
           bsonType: "int",
           description: "Unique identifier (integer)"
+        },
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
         },
         type: {
           bsonType: "string",
@@ -119,7 +132,7 @@ db.createCollection("contact_types", {
 print("  ✓ 'contact_types' created.");
 
 // ---------------------------------------------------------------------------
-// 3. municipalities
+// 3. municipalities  (MongoMunicipalityEntity)
 // ---------------------------------------------------------------------------
 print("[3/6] Creating 'municipalities' collection...");
 db.createCollection("municipalities", {
@@ -131,6 +144,10 @@ db.createCollection("municipalities", {
         _id: {
           bsonType: "int",
           description: "Unique identifier (integer)"
+        },
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
         },
         department: {
           bsonType: "object",
@@ -172,7 +189,7 @@ db.createCollection("municipalities", {
 print("  ✓ 'municipalities' created.");
 
 // ---------------------------------------------------------------------------
-// 4. users
+// 4. users  (MongoUserEntity)
 // ---------------------------------------------------------------------------
 print("[4/6] Creating 'users' collection...");
 db.createCollection("users", {
@@ -182,13 +199,11 @@ db.createCollection("users", {
       required: [
         "_id",
         "first_name",
+        "last_name",
         "role",
         "identification_number",
-        "identification_number_searchable",
         "email",
-        "email_searchable",
         "phone",
-        "phone_searchable",
         "created_at",
         "modified_at"
       ],
@@ -196,6 +211,10 @@ db.createCollection("users", {
         _id: {
           bsonType: "long",
           description: "Unique identifier (long)"
+        },
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
         },
         contacts: {
           bsonType: "array",
@@ -227,9 +246,13 @@ db.createCollection("users", {
                 description: "Whether this contact is public"
               },
               value: {
-                bsonType: "string",
-                maxLength: 250,
-                description: "Contact value, max 250 characters"
+                bsonType: "object",
+                required: ["data"],
+                description: "Protected value (encrypted)",
+                properties: {
+                  data: { bsonType: "binData" }
+                },
+                additionalProperties: false
               }
             },
             additionalProperties: false
@@ -240,14 +263,22 @@ db.createCollection("users", {
           description: "Reference to identification_types collection"
         },
         first_name: {
-          bsonType: "string",
-          maxLength: 150,
-          description: "User first name, max 150 characters"
+          bsonType: "object",
+          required: ["data"],
+          description: "Protected first name (encrypted)",
+          properties: {
+            data: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         last_name: {
-          bsonType: "string",
-          maxLength: 150,
-          description: "User last name, max 150 characters"
+          bsonType: "object",
+          required: ["data"],
+          description: "Protected last name (encrypted)",
+          properties: {
+            data: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         role: {
           bsonType: "string",
@@ -263,28 +294,34 @@ db.createCollection("users", {
           description: "URL to the user's profile image"
         },
         identification_number: {
-          bsonType: "binData",
-          description: "Encrypted identification number"
-        },
-        identification_number_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) identification number"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed identification number (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         email: {
-          bsonType: "binData",
-          description: "Encrypted email"
-        },
-        email_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) email"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed email (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         phone: {
-          bsonType: "string",
-          description: "User phone number"
-        },
-        phone_searchable: {
-          bsonType: "string",
-          description: "Searchable phone number"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed phone number (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         created_at: {
           bsonType: "date",
@@ -304,99 +341,38 @@ db.createCollection("users", {
 print("  ✓ 'users' created.");
 
 // ---------------------------------------------------------------------------
-// 5. owners
+// 5. owners  (MongoOwnerEntity)
 // ---------------------------------------------------------------------------
 print("[5/6] Creating 'owners' collection...");
 db.createCollection("owners", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["_id", "user", "created_at", "modified_at"],
+      required: ["_id", "user_id", "created_at", "modified_at"],
       properties: {
         _id: {
           bsonType: "long",
           description: "Unique identifier (long)"
         },
-        user: {
-          bsonType: "object",
-          required: [
-            "_id",
-            "first_name",
-            "role",
-            "identification_number",
-            "identification_number_searchable",
-            "email",
-            "email_searchable",
-            "phone",
-            "phone_searchable",
-            "created_at",
-            "modified_at"
-          ],
-          description: "Embedded user document",
-          properties: {
-            _id: {
-              bsonType: "long",
-              description: "User identifier"
-            },
-            contacts: {
-              bsonType: "array"
-            },
-            identification_type_id: {
-              bsonType: "int"
-            },
-            first_name: {
-              bsonType: "string",
-              maxLength: 150
-            },
-            last_name: {
-              bsonType: "string",
-              maxLength: 150
-            },
-            role: {
-              bsonType: "string",
-              maxLength: 10
-            },
-            is_active: {
-              bsonType: "bool"
-            },
-            profile_image_url: {
-              bsonType: "string"
-            },
-            identification_number: {
-              bsonType: "binData"
-            },
-            identification_number_searchable: {
-              bsonType: "binData"
-            },
-            email: {
-              bsonType: "binData"
-            },
-            email_searchable: {
-              bsonType: "binData"
-            },
-            phone: {
-              bsonType: "string"
-            },
-            phone_searchable: {
-              bsonType: "string"
-            },
-            created_at: {
-              bsonType: "date"
-            },
-            modified_at: {
-              bsonType: "date"
-            }
-          }
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
+        },
+        user_id: {
+          bsonType: "long",
+          description: "Reference to the associated user id"
         },
         alternative_email: {
-          bsonType: "binData",
-          description: "Encrypted alternative email"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed alternative email (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
-        alternative_email_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) alternative email"
-        },
-        secureParameters: {
+        secure_parameters: {
           bsonType: "object",
           description: "Key-value map of secure parameters (keys max 20 chars, values max 100 chars)",
           additionalProperties: {
@@ -422,7 +398,7 @@ db.createCollection("owners", {
 print("  ✓ 'owners' created.");
 
 // ---------------------------------------------------------------------------
-// 6. employees
+// 6. employees  (MongoEmployeeEntity)
 // ---------------------------------------------------------------------------
 print("[6/6] Creating 'employees' collection...");
 db.createCollection("employees", {
@@ -435,76 +411,9 @@ db.createCollection("employees", {
           bsonType: "long",
           description: "Unique identifier (long)"
         },
-        user: {
-          bsonType: "object",
-          required: [
-            "_id",
-            "first_name",
-            "role",
-            "identification_number",
-            "identification_number_searchable",
-            "email",
-            "email_searchable",
-            "phone",
-            "phone_searchable",
-            "created_at",
-            "modified_at"
-          ],
-          description: "Embedded user document",
-          properties: {
-            _id: {
-              bsonType: "long",
-              description: "User identifier"
-            },
-            contacts: {
-              bsonType: "array"
-            },
-            identification_type_id: {
-              bsonType: "int"
-            },
-            first_name: {
-              bsonType: "string",
-              maxLength: 150
-            },
-            last_name: {
-              bsonType: "string",
-              maxLength: 150
-            },
-            role: {
-              bsonType: "string",
-              maxLength: 10
-            },
-            is_active: {
-              bsonType: "bool"
-            },
-            profile_image_url: {
-              bsonType: "string"
-            },
-            identification_number: {
-              bsonType: "binData"
-            },
-            identification_number_searchable: {
-              bsonType: "binData"
-            },
-            email: {
-              bsonType: "binData"
-            },
-            email_searchable: {
-              bsonType: "binData"
-            },
-            phone: {
-              bsonType: "string"
-            },
-            phone_searchable: {
-              bsonType: "string"
-            },
-            created_at: {
-              bsonType: "date"
-            },
-            modified_at: {
-              bsonType: "date"
-            }
-          }
+        _class: {
+          bsonType: "string",
+          description: "Spring Data MongoDB type discriminator"
         },
         address: {
           bsonType: "object",
@@ -552,8 +461,13 @@ db.createCollection("employees", {
               additionalProperties: false
             },
             direction: {
-              bsonType: "binData",
-              description: "Encrypted street address"
+              bsonType: "object",
+              required: ["data"],
+              description: "Protected street address (encrypted)",
+              properties: {
+                data: { bsonType: "binData" }
+              },
+              additionalProperties: false
             },
             created_at: {
               bsonType: "date",
@@ -566,7 +480,7 @@ db.createCollection("employees", {
           },
           additionalProperties: false
         },
-        sectionalId: {
+        sectional_id: {
           bsonType: "int",
           description: "Sectional identifier"
         },
@@ -600,12 +514,13 @@ print("==========================================");
 print(" Creating Indexes");
 print("==========================================");
 
-db.users.createIndex({ "email_searchable": 1 }, { unique: true, name: "idx_users_email_searchable" });
-db.users.createIndex({ "identification_number_searchable": 1 }, { unique: true, name: "idx_users_id_number_searchable" });
-db.users.createIndex({ "phone_searchable": 1 }, { unique: true, name: "idx_users_phone_searchable" });
+db.users.createIndex({ "email.index": 1 }, { unique: true, name: "idx_users_email_index" });
+db.users.createIndex({ "identification_number.index": 1 }, { unique: true, name: "idx_users_id_number_index" });
+db.users.createIndex({ "phone.index": 1 }, { unique: true, name: "idx_users_phone_index" });
 db.users.createIndex({ "role": 1 }, { name: "idx_users_role" });
 
-db.owners.createIndex({ "alternative_email_searchable": 1 }, { unique: true, sparse: true, name: "idx_owners_alt_email_searchable" });
+db.owners.createIndex({ "user_id": 1 }, { unique: true, name: "idx_owners_user_id" });
+db.owners.createIndex({ "alternative_email.index": 1 }, { unique: true, sparse: true, name: "idx_owners_alt_email_index" });
 
 db.municipalities.createIndex({ "department._id": 1 }, { name: "idx_municipalities_department" });
 db.municipalities.createIndex({ "dane_code": 1 }, { unique: true, name: "idx_municipalities_dane_code" });

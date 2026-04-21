@@ -1,5 +1,6 @@
 package com.jobby.userservice.infrastructure.persistence.entities;
 
+import com.jobby.infrastructure.security.fields.ProtectedField;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,7 @@ public class MongoAddressEntity {
     private MongoMunicipalityEntity municipality;
 
     @NotNull
-    private byte[] direction;
+    private ProtectedField direction;
 
     @NotNull
     @Field("created_at")

@@ -1,5 +1,7 @@
 package com.jobby.userservice.infrastructure.persistence.entities;
 
+import com.jobby.infrastructure.security.fields.IndexedField;
+import com.jobby.infrastructure.security.fields.ProtectedField;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,7 +10,6 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
 import java.time.Instant;
 import java.util.Set;
 
@@ -20,20 +21,21 @@ public class MongoUserEntity {
     @Field("_id")
     private Long id;
 
+    @Field("contacts")
     private Set<@NotNull MongoContactEntity> contacts;
 
     @Field("identification_type_id")
     private int identificationTypeId;
 
     @Field("first_name")
-    @NotBlank
-    @Size(max = 150, message = "It cannot have more than 150 characters")
-    private String firstName;
+    @NotNull
+    private ProtectedField firstName;
 
     @Field("last_name")
-    @Size(max = 150, message = "It cannot have more than 150 characters")
-    private String lastName;
+    @NotNull
+    private ProtectedField lastName;
 
+    @Field("role")
     @NotBlank
     @Size(max = 10, message = "It cannot have more than 10 characters")
     private String role;
@@ -46,25 +48,15 @@ public class MongoUserEntity {
 
     @Field("identification_number")
     @NotNull
-    private byte[] identificationNumber;
+    private IndexedField identificationNumber;
 
+    @Field("email")
     @NotNull
-    @Field("identification_number_searchable")
-    private byte[] identificationNumberSearchable;
+    private IndexedField email;
 
+    @Field("phone")
     @NotNull
-    private byte[] email;
-
-    @NotNull
-    @Field("email_searchable")
-    private byte[] emailSearchable;
-
-    @NotNull
-    private String phone;
-
-    @NotNull
-    @Field("phone_searchable")
-    private String phoneSearchable;
+    private IndexedField phone;
 
     @NotNull
     @Field("created_at")

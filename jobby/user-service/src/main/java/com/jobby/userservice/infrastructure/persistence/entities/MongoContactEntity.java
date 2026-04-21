@@ -1,6 +1,8 @@
 package com.jobby.userservice.infrastructure.persistence.entities;
 
+import com.jobby.infrastructure.security.fields.ProtectedField;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +29,6 @@ public class MongoContactEntity {
     @Field("is_public")
     private boolean isPublic;
 
-    @NotBlank
-    @Size(max=250, message = "It cannot contain more than 250 characters")
-    private String value;
+    @NotNull
+    private ProtectedField value;
 }
