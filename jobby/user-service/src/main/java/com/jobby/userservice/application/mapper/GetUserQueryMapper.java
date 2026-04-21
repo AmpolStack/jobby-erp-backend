@@ -1,20 +1,31 @@
 package com.jobby.userservice.application.mapper;
 
-import com.jobby.userservice.application.responses.GetUserQuery;
+import com.jobby.userservice.application.queries.GetUserQuery;
 import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.infrastructure.mappers.ContactMapper;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel = "spring", uses = {ContactMapper.class})
-public interface GetUserQueryMapper {
+@Mapper(componentModel = "spring", uses = {GetContactQueryMapper.class})
+public abstract class GetUserQueryMapper {
 
-    GetUserQueryMapper INSTANCE = Mappers.getMapper(GetUserQueryMapper.class);
+    @Autowired
+    protected GetContactQueryMapper getContactQueryMapper;
 
-    @Mapping(source = "profileImageUrl.value", target = "profileImageUrl")
-    @Mapping(source = "identificationNumber.number", target = "identificationNumber")
-    @Mapping(source = "email.email", target = "email")
-    @Mapping(source = "phone.number", target = "phone")
-    GetUserQuery toGetUserQuery(User user);
+    public GetUserQuery toGetUserQuery(User user) {
+        if (user == null) return null;
+        return new GetUserQuery(
+                this.getContactQueryMapper.toGetContactQuerySet(user.getContacts()),
+                user.getIdentificationTypeId(),
+                user.getFirstName() != null ? user.getFirstName().getValue() : null,
+                user.getLastName() != null ? user.getLastName().getValue() : null,
+                user.getRole(),
+                user.isActive(),
+                user.getProfileImageUrl() != null ? user.getProfileImageUrl().getValue() : null,
+                user.getIdentificationNumber() != null ? user.getIdentificationNumber().getNumber() : null,
+                user.getEmail() != null ? user.getEmail().getEmail() : null,
+                user.getPhone() != null ? user.getPhone().getNumber() : null,
+                user.getCreatedAt(),
+                user.getModifiedAt()
+        );
+    }
 }

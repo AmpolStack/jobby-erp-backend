@@ -1,16 +1,22 @@
 package com.jobby.userservice.application.mapper;
 
-import com.jobby.userservice.application.responses.GetContactQuery;
+import com.jobby.userservice.application.queries.GetContactQuery;
 import com.jobby.userservice.domain.models.Contact;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface GetContactQueryMapper {
 
-    GetContactQueryMapper INSTANCE = Mappers.getMapper(GetContactQueryMapper.class);
+    default GetContactQuery toGetContactQuery(Contact contact) {
+        if (contact == null) return null;
+        return new GetContactQuery(
+                contact.getName(),
+                contact.getDescription(),
+                contact.isPublic(),
+                contact.getValue() != null ? contact.getValue().getValue() : null
+        );
+    }
 
-    @Mapping(source = "contactValue.value", target = "value")
-    GetContactQuery toGetContactQuery(Contact contact);
+    Set<GetContactQuery> toGetContactQuerySet(Set<Contact> contacts);
 }

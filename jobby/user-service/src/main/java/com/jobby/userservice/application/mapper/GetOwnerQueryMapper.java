@@ -1,16 +1,22 @@
 package com.jobby.userservice.application.mapper;
 
-import com.jobby.userservice.application.responses.GetOwnerQuery;
+import com.jobby.userservice.application.queries.GetOwnerQuery;
 import com.jobby.userservice.domain.models.Owner;
+import com.jobby.userservice.domain.models.User;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring", uses = {GetUserQueryMapper.class})
-public interface GetOwnerQueryMapper {
+public abstract class GetOwnerQueryMapper {
 
-    GetOwnerQueryMapper INSTANCE = Mappers.getMapper(GetOwnerQueryMapper.class);
+    @Autowired
+    protected GetUserQueryMapper getUserQueryMapper;
 
-    @Mapping(source = "alternativeEmail.email", target = "alternativeEmail")
-    GetOwnerQuery toGetOwnerQuery(Owner owner);
+    public GetOwnerQuery toGetOwnerQuery(Owner owner, User user) {
+        if (owner == null) return null;
+        return new GetOwnerQuery(
+                this.getUserQueryMapper.toGetUserQuery(user),
+                owner.getAlternativeEmail() != null ? owner.getAlternativeEmail().getEmail() : null
+        );
+    }
 }
