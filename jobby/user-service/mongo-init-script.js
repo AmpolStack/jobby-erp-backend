@@ -199,13 +199,11 @@ db.createCollection("users", {
       required: [
         "_id",
         "first_name",
+        "last_name",
         "role",
         "identification_number",
-        "identification_number_searchable",
         "email",
-        "email_searchable",
         "phone",
-        "phone_searchable",
         "created_at",
         "modified_at"
       ],
@@ -248,9 +246,13 @@ db.createCollection("users", {
                 description: "Whether this contact is public"
               },
               value: {
-                bsonType: "string",
-                maxLength: 250,
-                description: "Contact value, max 250 characters"
+                bsonType: "object",
+                required: ["data"],
+                description: "Protected value (encrypted)",
+                properties: {
+                  data: { bsonType: "binData" }
+                },
+                additionalProperties: false
               }
             },
             additionalProperties: false
@@ -261,14 +263,22 @@ db.createCollection("users", {
           description: "Reference to identification_types collection"
         },
         first_name: {
-          bsonType: "string",
-          maxLength: 150,
-          description: "User first name, max 150 characters"
+          bsonType: "object",
+          required: ["data"],
+          description: "Protected first name (encrypted)",
+          properties: {
+            data: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         last_name: {
-          bsonType: "string",
-          maxLength: 150,
-          description: "User last name, max 150 characters"
+          bsonType: "object",
+          required: ["data"],
+          description: "Protected last name (encrypted)",
+          properties: {
+            data: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         role: {
           bsonType: "string",
@@ -284,28 +294,34 @@ db.createCollection("users", {
           description: "URL to the user's profile image"
         },
         identification_number: {
-          bsonType: "binData",
-          description: "Encrypted identification number"
-        },
-        identification_number_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) identification number"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed identification number (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         email: {
-          bsonType: "binData",
-          description: "Encrypted email"
-        },
-        email_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) email"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed email (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         phone: {
-          bsonType: "string",
-          description: "User phone number"
-        },
-        phone_searchable: {
-          bsonType: "string",
-          description: "Searchable phone number"
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed phone number (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         created_at: {
           bsonType: "date",
@@ -332,7 +348,7 @@ db.createCollection("owners", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["_id", "created_at", "modified_at"],
+      required: ["_id", "user_id", "created_at", "modified_at"],
       properties: {
         _id: {
           bsonType: "long",
@@ -342,13 +358,19 @@ db.createCollection("owners", {
           bsonType: "string",
           description: "Spring Data MongoDB type discriminator"
         },
-        alternative_email: {
-          bsonType: "binData",
-          description: "Encrypted alternative email"
+        user_id: {
+          bsonType: "long",
+          description: "Reference to the associated user id"
         },
-        alternative_email_searchable: {
-          bsonType: "binData",
-          description: "Searchable (hashed) alternative email"
+        alternative_email: {
+          bsonType: "object",
+          required: ["data", "index"],
+          description: "Indexed alternative email (encrypted + searchable)",
+          properties: {
+            data: { bsonType: "binData" },
+            index: { bsonType: "binData" }
+          },
+          additionalProperties: false
         },
         secure_parameters: {
           bsonType: "object",
@@ -439,8 +461,13 @@ db.createCollection("employees", {
               additionalProperties: false
             },
             direction: {
-              bsonType: "binData",
-              description: "Encrypted street address"
+              bsonType: "object",
+              required: ["data"],
+              description: "Protected street address (encrypted)",
+              properties: {
+                data: { bsonType: "binData" }
+              },
+              additionalProperties: false
             },
             created_at: {
               bsonType: "date",
@@ -487,12 +514,13 @@ print("==========================================");
 print(" Creating Indexes");
 print("==========================================");
 
-db.users.createIndex({ "email_searchable": 1 }, { unique: true, name: "idx_users_email_searchable" });
-db.users.createIndex({ "identification_number_searchable": 1 }, { unique: true, name: "idx_users_id_number_searchable" });
-db.users.createIndex({ "phone_searchable": 1 }, { unique: true, name: "idx_users_phone_searchable" });
+db.users.createIndex({ "email.index": 1 }, { unique: true, name: "idx_users_email_index" });
+db.users.createIndex({ "identification_number.index": 1 }, { unique: true, name: "idx_users_id_number_index" });
+db.users.createIndex({ "phone.index": 1 }, { unique: true, name: "idx_users_phone_index" });
 db.users.createIndex({ "role": 1 }, { name: "idx_users_role" });
 
-db.owners.createIndex({ "alternative_email_searchable": 1 }, { unique: true, sparse: true, name: "idx_owners_alt_email_searchable" });
+db.owners.createIndex({ "user_id": 1 }, { unique: true, name: "idx_owners_user_id" });
+db.owners.createIndex({ "alternative_email.index": 1 }, { unique: true, sparse: true, name: "idx_owners_alt_email_index" });
 
 db.municipalities.createIndex({ "department._id": 1 }, { name: "idx_municipalities_department" });
 db.municipalities.createIndex({ "dane_code": 1 }, { unique: true, name: "idx_municipalities_dane_code" });
