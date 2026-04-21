@@ -1,12 +1,12 @@
 package com.jobby.userservice.infrastructure.persistence.entities;
 
+import com.jobby.infrastructure.security.fields.IndexedField;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
@@ -17,18 +17,16 @@ import java.util.Map;
 @Document("owners")
 public class MongoOwnerEntity {
     @Id
+    @NotNull
     @Field("_id")
     private Long id;
 
-    @Transient
-    private MongoUserEntity user;
+    @NotNull
+    @Field("user_id")
+    private Long userId;
 
     @Field("alternative_email")
-    private byte[] alternativeEmail;
-
-    @Field("alternative_email_searchable")
-    private byte[] alternativeEmailSearchable;
-
+    private IndexedField alternativeEmail;
 
     @Field("secure_parameters")
     private Map<
