@@ -13,20 +13,24 @@ import java.util.Set;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdentificationNumber {
     private String number;
-    private static final String FIELD_NAME = "identification number";
+    private static final String NUMBER_FIELD_NAME = "identification number";
+    private static final String TYPE_FIELD_NAME = "identification type";
 
     public static Result<IdentificationNumber, Error> of(String number,
                                                          IdentificationType type){
         return ValidationChain.create()
-                .validateNotBlank(number, FIELD_NAME)
-                .validateGreaterOrEqualsThan(number.length(), type.getMinLength(),
-                        FIELD_NAME + " (" + type.getAbbreviation() + ")")
-                .validateSmallerOrEqualsThan(number.length(), type.getMaxLength(),
-                        FIELD_NAME + " (" + type.getAbbreviation() + ")")
-                .add(ValidExpression(number,
-                        type.getExpression(),
-                        type.getAllowCharacters()))
+                .validateNotBlank(number, NUMBER_FIELD_NAME)
+                .validateInternalNotNull(type, TYPE_FIELD_NAME)
                 .build()
+                .flatMap(v -> ValidationChain.create()
+                        .validateGreaterOrEqualsThan(number.length(), type.getMinLength(),
+                                NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
+                        .validateSmallerOrEqualsThan(number.length(), type.getMaxLength(),
+                                NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
+                        .add(ValidExpression(number,
+                                type.getExpression(),
+                                type.getAllowCharacters()))
+                        .build())
                 .map(v -> new IdentificationNumber(number));
     }
 
@@ -44,7 +48,7 @@ public class IdentificationNumber {
         var allowCharactersString = String.join(", ", allowCharacters);
 
         return Result.failure(ErrorType.VALIDATION_ERROR,
-                new Field(FIELD_NAME, "The format is invalid. It can only contain: " + allowCharactersString));
+                new Field(NUMBER_FIELD_NAME, "The format is invalid. It can only contain: " + allowCharactersString));
 
     }
 

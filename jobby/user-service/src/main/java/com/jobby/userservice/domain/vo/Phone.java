@@ -13,15 +13,16 @@ public class Phone {
     private String number;
     private static final String REGEX = "^3\\d{9}$";
     private static final String PREFIX = "+57";
+    private static final String FIELD_NAME = "phone number";
 
     public static Result<Phone, Error> of(String number){
-        var temp = number.matches(REGEX);
-
         return ValidationChain.create()
-                .validateNotBlank(number, "phone")
-                .validateIf(!number.matches(REGEX),
-                        () -> Result.failure(ErrorType.VALIDATION_ERROR, new Field("phone", "the provided phone is invalid")))
+                .validateNotBlank(number, FIELD_NAME)
                 .build()
+                .flatMap(v -> ValidationChain.create()
+                        .validateIf(!number.matches(REGEX),
+                                () -> Result.failure(ErrorType.VALIDATION_ERROR, new Field(FIELD_NAME, "the provided phone is invalid")))
+                        .build())
                 .map(v -> new Phone(number));
     }
 
