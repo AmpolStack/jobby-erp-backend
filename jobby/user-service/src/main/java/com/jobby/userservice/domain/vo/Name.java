@@ -11,6 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Name {
     private String value;
+    private static final int MIN_LENGTH = 2;
     private static final int MAX_LENGTH = 150;
 
     public static Result<Name, Error> of(String value, String fieldName){
@@ -20,6 +21,7 @@ public class Name {
                 .flatMap(v -> {
                     var cleanValue = value.trim();
                     return ValidationChain.create()
+                                    .validateGreaterOrEqualsThan(cleanValue.length(), MIN_LENGTH, fieldName)
                                     .validateSmallerOrEqualsThan(cleanValue.length(), MAX_LENGTH, fieldName)
                                     .build()
                             .map(v2 -> new Name(cleanValue));
