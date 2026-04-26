@@ -1,6 +1,7 @@
 package com.jobby.userservice;
 
 import com.jobby.domain.mobility.error.Error;
+import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.result.Result;
 import org.junit.jupiter.api.Assertions;
 
@@ -11,6 +12,11 @@ public class ResultAssertions {
 
     public static <T,E> void assertFailure(Result<T,E> obtained){
         Assertions.assertTrue(obtained.isFailure());
+    }
+
+    public static <T> void assertFailure(Result<T,Error> obtained, ErrorType errorType){
+        Assertions.assertTrue(obtained.isFailure());
+        Assertions.assertSame(obtained.error().getCode(), errorType);
     }
 
     public static <T,T2> void assertFailure(Result<T, Error> obtained, Result<T2,Error> expected){
