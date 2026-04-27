@@ -18,10 +18,12 @@ public class ContactValue {
     public static Result<ContactValue, Error> of(String value, ContactType type){
         return ValidationChain.create()
                 .validateNotBlank(value, FIELD_NAME)
-                .validateSmallerOrEqualsThan(value.length(), MAX_LENGTH, "contact")
-                .add(ValidExpression(value, type.getExpression(), type.getType()))
                 .build()
-                .map(v -> new ContactValue(value));
+                .flatMap(v -> ValidationChain.create()
+                        .validateSmallerOrEqualsThan(value.length(), MAX_LENGTH, "contact")
+                        .add(ValidExpression(value, type.getExpression(), type.getType()))
+                        .build()
+                        .map(v2 -> new ContactValue(value)));
     }
 
     public static ContactValue on(String value){
@@ -32,9 +34,9 @@ public class ContactValue {
                                                        String regex,
                                                        String typeName) {
         return ValidationChain.create()
-                .validateIf(value.matches(regex),
+                .validateIf(!value.matches(regex),
                         () -> Result.failure(ErrorType.VALIDATION_ERROR,
-                                new Field(FIELD_NAME, "The format it provides does not correspond to the" + typeName + " format")))
+                                new Field(FIELD_NAME, "The format it provides does not correspond to the " + typeName + " format")))
                 .build();
     }
 

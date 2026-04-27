@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Email {
     private String email;
-    private static final String REGEX ="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$";
+    private static final String REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String FIELD_NAME = "email address";
 
     public static Result<Email, Error> of(String email){
@@ -19,8 +19,8 @@ public class Email {
                 .validateNotBlank(email, FIELD_NAME)
                 .build()
                 .flatMap(v -> ValidationChain.create()
-                        .validateIf(email.matches(REGEX)
-                                , () -> Result.failure(ErrorType.VALIDATION_ERROR,
+                        .validateIf(!email.matches(REGEX),
+                                () -> Result.failure(ErrorType.VALIDATION_ERROR,
                                         new Field("email", "The email address is invalid.")))
                         .build())
                 .map(v -> new Email(email));

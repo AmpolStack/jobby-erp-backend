@@ -19,16 +19,18 @@ public class ImageUrl {
     public static Result<ImageUrl, Error> of(String value) {
         return ValidationChain.create()
                 .validateNotBlank(value, "image-url")
-                .validateIf(!value.matches(URL_REGEX), () ->
-                        Result.failure(ErrorType.VALIDATION_ERROR,
-                                new Field("image-url", "The provided URL does not correspond to valid origins"))
-                )
-                .validateIf(!hasValidExtension(value), () ->
-                        Result.failure(ErrorType.VALIDATION_ERROR, new Field("image-url",
-                                "The file extension is not supported; only the following are accepted: " + String.join(", ", ALLOWED_EXTENSIONS)))
-                )
                 .build()
-                .map(v -> new ImageUrl(value));
+                .flatMap(v -> ValidationChain.create()
+                        .validateIf(!value.matches(URL_REGEX), () ->
+                                Result.failure(ErrorType.VALIDATION_ERROR,
+                                        new Field("image-url", "The provided URL does not correspond to valid origins"))
+                        )
+                        .validateIf(!hasValidExtension(value), () ->
+                                Result.failure(ErrorType.VALIDATION_ERROR, new Field("image-url",
+                                        "The file extension is not supported; only the following are accepted: " + String.join(", ", ALLOWED_EXTENSIONS)))
+                        )
+                        .build()
+                        .map(v2 -> new ImageUrl(value)));
     }
 
     public static ImageUrl on(String value){

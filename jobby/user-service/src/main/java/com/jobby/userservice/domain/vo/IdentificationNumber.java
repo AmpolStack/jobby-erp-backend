@@ -22,16 +22,19 @@ public class IdentificationNumber {
                 .validateNotBlank(number, NUMBER_FIELD_NAME)
                 .validateInternalNotNull(type, TYPE_FIELD_NAME)
                 .build()
-                .flatMap(v -> ValidationChain.create()
-                        .validateGreaterOrEqualsThan(number.length(), type.getMinLength(),
-                                NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
-                        .validateSmallerOrEqualsThan(number.length(), type.getMaxLength(),
-                                NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
-                        .add(ValidExpression(number,
-                                type.getExpression(),
-                                type.getAllowCharacters()))
-                        .build())
-                .map(v -> new IdentificationNumber(number));
+                .flatMap(v -> {
+                    var cleanedNumber = number.trim();
+                    return ValidationChain.create()
+                            .validateGreaterOrEqualsThan(cleanedNumber.length(), type.getMinLength(),
+                                    NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
+                            .validateSmallerOrEqualsThan(cleanedNumber.length(), type.getMaxLength(),
+                                    NUMBER_FIELD_NAME + " (" + type.getAbbreviation() + ")")
+                            .add(ValidExpression(cleanedNumber,
+                                    type.getExpression(),
+                                    type.getAllowCharacters()))
+                            .build()
+                            .map(v2 -> new IdentificationNumber(number));
+                });
     }
 
     public static IdentificationNumber on(String number){
