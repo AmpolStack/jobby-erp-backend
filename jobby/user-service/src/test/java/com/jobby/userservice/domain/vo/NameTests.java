@@ -22,33 +22,12 @@ public class NameTests {
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When {1} is {2}")
-        @DisplayName("Given fields are blank, when of method is called, then returns validation error")
-        @MethodSource("casesOfBlank")
-        void of_WhenRequiredFieldsAreBlank_ShouldReturnsValidationFailure(
-                String name,
-                String fieldName,
-                String emptyType
-        ) {
-            // Act
-            var result = Name.of(name, VALID_FIELD_NAME);
-
-            // Asserts
-            var expectedResult = ValidationChain
-                    .create()
-                    .validateNotBlank("", VALID_FIELD_NAME)
-                    .build();
-
-            ResultAssertions.assertFailure(result, expectedResult);
-        }
-
-        @ParameterizedTest(name = "When {1} is {2}")
-        @DisplayName("Given fields are null, when of method is called, then returns validation error")
+        @ParameterizedTest(name = "When name is {1}")
+        @DisplayName("Given fields are null or blank, when of method is called, then returns validation error")
         @MethodSource("casesOfNullity")
-        void of_WhenRequiredFieldsAreNull_ShouldReturnsValidationFailure(
+        void of_WhenNameFieldAreNullOrBlank_ShouldReturnsValidationFailure(
                 String name,
-                String fieldName,
-                String emptyType
+                String nullityType
         ) {
             // Act
             var result = Name.of(name, VALID_FIELD_NAME);
@@ -56,7 +35,7 @@ public class NameTests {
             // Asserts
             var expectedResult = ValidationChain
                     .create()
-                    .validateNotBlank(null, VALID_FIELD_NAME)
+                    .validateNotBlank(name, VALID_FIELD_NAME)
                     .build();
 
             ResultAssertions.assertFailure(result, expectedResult);
@@ -124,17 +103,11 @@ public class NameTests {
             ResultAssertions.assertSuccess(result);
         }
 
-        private static Stream<Arguments> casesOfBlank(){
+        private static Stream<Arguments> casesOfNullity(){
             return NullityOps.BLANK_VALUES.stream()
                     .flatMap(blank -> Stream.of(
-                            Arguments.of(blank, VALID_FIELD_NAME, NullityOps.getNullityName(blank))
+                            Arguments.of(blank, NullityOps.getNullityName(blank))
                     ));
-        }
-
-        private static Stream<Arguments> casesOfNullity(){
-            return Stream.of(
-                    Arguments.of(null, VALID_FIELD_NAME, NullityOps.getNullityName(null))
-            );
         }
 
         private static Stream<Arguments> casesOfToShort(){

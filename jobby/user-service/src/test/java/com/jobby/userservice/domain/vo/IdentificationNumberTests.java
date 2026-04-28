@@ -1,7 +1,5 @@
 package com.jobby.userservice.domain.vo;
 
-import com.jobby.domain.mobility.error.Error;
-import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.NullityOps;
 import com.jobby.userservice.ResultAssertions;
@@ -9,6 +7,7 @@ import com.jobby.userservice.domain.models.IdentificationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -32,36 +31,31 @@ public class IdentificationNumberTests {
 
     @Nested
     class OfMethod{
-        @ParameterizedTest(name = "When {2} is null")
-        @DisplayName("Given required fields are null, when method of is called, than returns validation failure")
+        @ParameterizedTest(name = "When number is {1}")
+        @DisplayName("Given number is null or blank, when method of is called, than returns validation failure")
         @MethodSource("casesOfNullity")
-        void of_WhenRequiredFieldsAreNull_ShouldReturnValidationFailure(
-                String number,
-                IdentificationType type,
-                String fieldName,
-                Result<Void, Error> expected
-        ){
+        void of_WhenNumberAreNullOrBlank_ShouldReturnValidationFailure(
+                String number, String nullityType){
             // Act
-            var result = IdentificationNumber.of(number, type);
-
-            // Assert
-            ResultAssertions.assertFailure(result, expected);
-        }
-
-        @ParameterizedTest(name = "When {2} is blank")
-        @DisplayName("Given required fields are blank, when method of is called, than returns validation failure")
-        @MethodSource("casesOfBlank")
-        void of_WhenRequiredFieldsAreBlank_ShouldReturnValidationFailure(
-                String number,
-                IdentificationType type,
-                String fieldName
-        ){
-            // Act
-            var result = IdentificationNumber.of(number, type);
+            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
 
             // Assert
             var expected = ValidationChain.create()
-                    .validateNotBlank("", fieldName)
+                    .validateNotBlank(number, "identification number")
+                    .build();
+
+            ResultAssertions.assertFailure(result, expected);
+        }
+
+        @Test
+        @DisplayName("Given Identification type are null, when method of is called, than returns validation failure")
+        void of_WhenIdentificationTypeAreNull_ShouldReturnValidationFailure(){
+            // Act
+            var result = IdentificationNumber.of(VALID_NUMBER, null);
+
+            // Assert
+            var expected = ValidationChain.create()
+                            .validateInternalNotNull(null, "identification type")
                     .build();
 
             ResultAssertions.assertFailure(result, expected);
@@ -104,28 +98,12 @@ public class IdentificationNumberTests {
         }
 
         private static Stream<Arguments> casesOfNullity(){
-            return Stream.of(
-                    Arguments.of(null, VALID_IDENTIFICATION_TYPE, "identification number",
-                            ValidationChain.create().
-                            validateNotNull(null, "identification number")
-                            .build()),
-                    Arguments.of(VALID_NUMBER, null, "identification type",
-                            ValidationChain.create()
-                            .validateInternalNotNull(null, "identification type")
-                            .build()
-                    )
-            );
-        }
-
-        private static Stream<Arguments> casesOfBlank(){
             return NullityOps.BLANK_VALUES.stream()
                     .flatMap(blank ->
                             Stream.of(
-                                    Arguments.of(blank,
-                                            VALID_IDENTIFICATION_TYPE,
-                                            "identification number")
+                                    Arguments.of(blank, NullityOps.getNullityName(blank))
                             )
-                            );
+                    );
         }
 
         private static Stream<Arguments> casesOfToShort(){

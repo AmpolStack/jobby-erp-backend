@@ -34,27 +34,15 @@ public class ContactValueTests {
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When value is null")
-        @DisplayName("Given value is null, when of is called, then returns validation failure")
+        @ParameterizedTest(name = "When value is {1}")
+        @DisplayName("Given value is null or blank, when of is called, then returns validation failure")
         @MethodSource("casesOfNullity")
-        void of_WhenValueIsNull_ShouldReturnValidationFailure(String value) {
+        void of_WhenValueIsNullOrBlank_ShouldReturnValidationFailure(String value,
+                                                              String nullityType) {
             var result = ContactValue.of(value, GENERIC_TYPE);
 
             var expected = ValidationChain.create()
-                    .validateNotBlank(null, "contact value")
-                    .build();
-
-            ResultAssertions.assertFailure(result, expected);
-        }
-
-        @ParameterizedTest(name = "When value is blank -> [{0}]")
-        @DisplayName("Given value is blank, when of is called, then returns validation failure")
-        @MethodSource("casesOfBlank")
-        void of_WhenValueIsBlank_ShouldReturnValidationFailure(String value) {
-            var result = ContactValue.of(value, GENERIC_TYPE);
-
-            var expected = ValidationChain.create()
-                    .validateNotBlank("", "contact value")
+                    .validateNotBlank(value, "contact value")
                     .build();
 
             ResultAssertions.assertFailure(result, expected);
@@ -126,11 +114,10 @@ public class ContactValueTests {
         }
 
         private static Stream<Arguments> casesOfNullity() {
-            return Stream.of(Arguments.of((Object) null));
-        }
-
-        private static Stream<Arguments> casesOfBlank() {
-            return NullityOps.BLANK_VALUES.stream().map(Arguments::of);
+            return NullityOps.BLANK_VALUES.stream()
+                    .flatMap(blank -> Stream.of(
+                            Arguments.of(blank, NullityOps.getNullityName(blank))
+                    ));
         }
 
         private static Stream<Arguments> casesOfInvalidPhoneFormat() {

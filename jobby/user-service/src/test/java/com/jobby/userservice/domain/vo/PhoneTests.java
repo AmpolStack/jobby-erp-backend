@@ -20,27 +20,14 @@ public class PhoneTests {
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When number is null")
-        @DisplayName("Given number is null, when of is called, then returns validation failure")
+        @ParameterizedTest(name = "When number is {1}")
+        @DisplayName("Given number is null or blank, when of is called, then returns validation failure")
         @MethodSource("casesOfNullity")
-        void of_WhenNumberIsNull_ShouldReturnValidationFailure(String number) {
+        void of_WhenNumberIsNullOrBlank_ShouldReturnValidationFailure(String number, String nullityType) {
             var result = Phone.of(number);
 
             var expected = ValidationChain.create()
-                    .validateNotBlank(null, "phone number")
-                    .build();
-
-            ResultAssertions.assertFailure(result, expected);
-        }
-
-        @ParameterizedTest(name = "When number is blank -> [{0}]")
-        @DisplayName("Given number is blank, when of is called, then returns validation failure")
-        @MethodSource("casesOfBlank")
-        void of_WhenNumberIsBlank_ShouldReturnValidationFailure(String number) {
-            var result = Phone.of(number);
-
-            var expected = ValidationChain.create()
-                    .validateNotBlank("", "phone number")
+                    .validateNotBlank(number, "phone number")
                     .build();
 
             ResultAssertions.assertFailure(result, expected);
@@ -66,11 +53,10 @@ public class PhoneTests {
         }
 
         private static Stream<Arguments> casesOfNullity() {
-            return Stream.of(Arguments.of((Object) null));
-        }
-
-        private static Stream<Arguments> casesOfBlank() {
-            return NullityOps.BLANK_VALUES.stream().map(Arguments::of);
+            return NullityOps.BLANK_VALUES.stream()
+                    .flatMap(blank -> Stream.of(
+                            Arguments.of(blank, NullityOps.getNullityName(blank))
+                    ));
         }
 
         private static Stream<Arguments> casesOfInvalidFormat() {

@@ -21,33 +21,17 @@ public class ImageUrlTests {
      */
     private static final String VALID_URL = "https://cdn.example.com/images/profile.jpg";
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // of() — main factory with validation
-    // ─────────────────────────────────────────────────────────────────────────
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When value is null")
+        @ParameterizedTest(name = "When value is {1}")
         @DisplayName("Given value is null, when of is called, then returns validation failure")
         @MethodSource("casesOfNullity")
-        void of_WhenValueIsNull_ShouldReturnValidationFailure(String value) {
+        void of_WhenValueIsNull_ShouldReturnValidationFailure(String value, String nullityType) {
             var result = ImageUrl.of(value);
 
             var expected = ValidationChain.create()
-                    .validateNotBlank(null, "image-url")
-                    .build();
-
-            ResultAssertions.assertFailure(result, expected);
-        }
-
-        @ParameterizedTest(name = "When value is blank -> [{0}]")
-        @DisplayName("Given value is blank, when of is called, then returns validation failure")
-        @MethodSource("casesOfBlank")
-        void of_WhenValueIsBlank_ShouldReturnValidationFailure(String value) {
-            var result = ImageUrl.of(value);
-
-            var expected = ValidationChain.create()
-                    .validateNotBlank("", "image-url")
+                    .validateNotBlank(value, "image-url")
                     .build();
 
             ResultAssertions.assertFailure(result, expected);
@@ -87,12 +71,12 @@ public class ImageUrlTests {
             Assertions.assertEquals(url, result.data().getValue());
         }
 
-        private static Stream<Arguments> casesOfNullity() {
-            return Stream.of(Arguments.of((Object) null));
-        }
 
-        private static Stream<Arguments> casesOfBlank() {
-            return NullityOps.BLANK_VALUES.stream().map(Arguments::of);
+        private static Stream<Arguments> casesOfNullity() {
+            return NullityOps.BLANK_VALUES.stream()
+                    .flatMap(blank -> Stream.of(
+                            Arguments.of(blank, NullityOps.getNullityName(blank))
+                    ));
         }
 
         private static Stream<Arguments> casesOfInvalidUrl() {
@@ -117,9 +101,7 @@ public class ImageUrlTests {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // on() — bypass factory, always constructs regardless of input
-    // ─────────────────────────────────────────────────────────────────────────
+
     @Nested
     class OnMethod {
 
