@@ -14,18 +14,18 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 @Component
 public class TransactionExecutor {
-    private final TransactionalContext context;
+    protected final SpringDataTransactionalContext context;
 
     public <R> Result<R, Error> read(Supplier<R> supplier,
                                      ReadTransactionalProxy proxy){
-        return context.runReadOnly(()-> proxy.handle(supplier));
+        return this.context.runReadOnly(()-> proxy.handle(supplier));
     }
 
-    public <R> WritingTransactionExecutor write(){
+    public WritingTransactionExecutor write(){
         return new WritingTransactionExecutor();
     }
 
-    public static final class WritingTransactionExecutor {
+    public final class WritingTransactionExecutor {
         private final List<Supplier<Result<Void, Error>>> operations = new ArrayList<>();
 
         public WritingTransactionExecutor add(Runnable runnable,
@@ -47,15 +47,19 @@ public class TransactionExecutor {
         }
 
         public Result<Void, Error> build(){
-            Result<Void, Error> result = Result.success();
+            var response =  context.run(() -> {
+                Result<Void,Error> result = Result.success();
 
-            for (Supplier<Result<Void, Error>> operation : operations) {
-                result = operation.get();
-                if (result.isFailure()) break;
-            }
+                for (Supplier<Result<Void, Error>> operation : operations) {
+                    result = operation.get();
+                    if (result.isFailure()) break;
+                }
+
+                return result;
+            });
 
             operations.clear();
-            return result;
+            return response;
         }
     }
 }

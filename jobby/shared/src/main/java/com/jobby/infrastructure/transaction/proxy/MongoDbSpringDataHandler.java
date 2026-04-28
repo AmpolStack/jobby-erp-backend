@@ -1,5 +1,5 @@
 package com.jobby.infrastructure.transaction.proxy;
-
+ 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
@@ -7,10 +7,10 @@ import com.jobby.domain.mobility.result.Result;
 import org.springframework.dao.*;
 import org.springframework.data.mongodb.MongoTransactionException;
 import java.util.function.Supplier;
-
-public class MongoDbSpringDataHandler implements WriteTransactionalProxy, ReadTransactionalProxy {
+ 
+public class MongoDbSpringDataHandler implements PersistenceProxy {
     @Override
-    public <T> Result<T, Error> handle(Supplier<T> supplier) {
+    public <T> Result<T, Error> read(Supplier<T> supplier) {
         try {
             var result = supplier.get();
             return Result.success(result);
@@ -31,12 +31,12 @@ public class MongoDbSpringDataHandler implements WriteTransactionalProxy, ReadTr
                     new Field("unexpected", "Unexpected error: " + ex.getMessage()));
         }
     }
-
+ 
     @Override
-    public Result<Void, Error> handle(Runnable runnable) {
+    public <T> Result<T, Error> write(Supplier<T> supplier) {
         try {
-            runnable.run();
-            return Result.success();
+            var result = supplier.get();
+            return Result.success(result);
         } catch (DuplicateKeyException ex) {
             return Result.failure(ErrorType.VALIDATION_ERROR,
                     new Field("duplicate key", "Duplicate key or unique constraint violation"));
@@ -65,5 +65,13 @@ public class MongoDbSpringDataHandler implements WriteTransactionalProxy, ReadTr
             return Result.failure(ErrorType.VALIDATION_ERROR,
                     new Field("unexpected", "Unexpected error: " + ex.getMessage()));
         }
+    }
+ 
+    @Override
+    public Result<Void, Error> write(Runnable runnable) {
+        return write(() -> {
+            runnable.run();
+            return null;
+        });
     }
 }
