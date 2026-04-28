@@ -37,7 +37,7 @@ public class UserTests {
     @Nested
     class CreateMethod{
         @ParameterizedTest(name = "When {0} is {2}, should returns failure")
-        @DisplayName("Given required fields are null, when creating a user, then it returns a validation error.")
+        @DisplayName("Given required fields are null or null, when creating a user, then it returns a validation error.")
         @MethodSource("casesOfNullity")
         void create_WhenRequiredFieldIsNullOrBlank_ShouldReturnValidationError(
                 String fieldName,
