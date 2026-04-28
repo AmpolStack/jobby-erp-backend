@@ -37,7 +37,7 @@ public class UserTests {
     @Nested
     class CreateMethod{
         @ParameterizedTest(name = "When {0} is {2}, should returns failure")
-        @DisplayName("Given required fields are null or null, when creating a user, then it returns a validation error.")
+        @DisplayName("Given required fields are null or blank, when creating a user, then it returns a validation error.")
         @MethodSource("casesOfNullity")
         void create_WhenRequiredFieldIsNullOrBlank_ShouldReturnValidationError(
                 String fieldName,
@@ -121,12 +121,11 @@ public class UserTests {
 
         // Only instances without a dedicated Value Object are validated, since each one has its own unit tests.
         private static Stream<Arguments> casesOfNullity() {
-            return NullityOps.BLANK_VALUES.stream()
-                    .flatMap(blank -> Stream.of(
-                            Arguments.of("role", blank, NullityOps.getNullityName(blank),
-                                    VALID_FIRSTNAME, VALID_LASTNAME, blank, VALID_IDENTIFICATION_NUMBER,
-                                    VALID_EMAIL, VALID_PHONE, VALID_IDENTIFICATION_TYPE))
-                    );
+            return NullityOps.getBlankCases((blank, blankType)-> new Arguments[]{
+                    Arguments.of("role", blank, NullityOps.getNullityName(blank),
+                            VALID_FIRSTNAME, VALID_LASTNAME, blank, VALID_IDENTIFICATION_NUMBER,
+                            VALID_EMAIL, VALID_PHONE, VALID_IDENTIFICATION_TYPE)
+            });
         }
     }
 

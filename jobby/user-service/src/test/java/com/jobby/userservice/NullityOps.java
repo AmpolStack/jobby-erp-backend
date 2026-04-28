@@ -1,7 +1,10 @@
 package com.jobby.userservice;
 
+import org.junit.jupiter.params.provider.Arguments;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 public class NullityOps {
 
@@ -25,5 +28,10 @@ public class NullityOps {
         return "null";
     }
 
-
+    public static Stream<Arguments> getBlankCases(BiFunction<String, String, Arguments[]> bifunction){
+        return BLANK_VALUES.stream()
+                .flatMap(blank -> Stream.of(
+                        bifunction.apply(blank, getNullityName(blank)
+                        )));
+    }
 }
