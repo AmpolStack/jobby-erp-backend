@@ -1,10 +1,10 @@
 package com.jobby.infrastructure.transaction;
 
-
+import com.jobby.domain.functional.PersistenceTask;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.infrastructure.transaction.proxy.ReadTransactionalProxy;
-import com.jobby.infrastructure.transaction.proxy.WriteTransactionalProxy;
+import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.infrastructure.transaction.proxy.PersistenceProxy;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
@@ -13,53 +13,55 @@ import java.util.function.Supplier;
 
 @AllArgsConstructor
 @Component
-public class TransactionExecutor {
+public class TransactionOrchestratorAdapter implements TransactionOrchestrator {
     protected final SpringDataTransactionalContext context;
+    protected final PersistenceProxy persistenceProxy;
 
-    public <R> Result<R, Error> read(Supplier<R> supplier,
-                                     ReadTransactionalProxy proxy){
-        return this.context.runReadOnly(()-> proxy.handle(supplier));
+    @Override
+    public <R> Result<R, Error> read(Supplier<R> supplier){
+        return persistenceProxy.read(() -> context.runReadOnly(() -> Result.success(supplier.get())))
+                .flatMap(inner -> inner);
     }
 
+    @Override
     public WritingTransactionExecutor write(){
         return new WritingTransactionExecutor();
     }
 
-    public final class WritingTransactionExecutor {
+    public final class WritingTransactionExecutor implements WritingTransactionOrchestrator{
         private final List<Supplier<Result<Void, Error>>> operations = new ArrayList<>();
 
-        public WritingTransactionExecutor add(Runnable runnable,
-                                                 WriteTransactionalProxy proxy){
-            Supplier<Result<Void, Error>> operation = () -> proxy.handle(runnable);
-            operations.add(operation);
-            return this;
-        }
-
+        @Override
         public WritingTransactionExecutor add(Runnable runnable){
-
-            Supplier<Result<Void, Error>> operation = ()-> {
+            operations.add(() -> {
                 runnable.run();
                 return Result.success();
-            };
-
-            operations.add(operation);
+            });
             return this;
         }
 
-        public Result<Void, Error> build(){
-            var response =  context.run(() -> {
-                Result<Void,Error> result = Result.success();
-
-                for (Supplier<Result<Void, Error>> operation : operations) {
-                    result = operation.get();
-                    if (result.isFailure()) break;
-                }
-
-                return result;
+        @Override
+        public WritingTransactionExecutor add(PersistenceTask task){
+            operations.add(() -> {
+                task.execute();
+                return Result.success();
             });
+            return this;
+        }
+
+        @Override
+        public Result<Void, Error> build(){
+            Result<Result<Void, Error>, Error> result = persistenceProxy.write(() -> context.run(() -> {
+                Result<Void, Error> opResult = Result.success();
+                for (Supplier<Result<Void, Error>> operation : operations) {
+                    opResult = operation.get();
+                    if (opResult.isFailure()) break;
+                }
+                return opResult;
+            }));
 
             operations.clear();
-            return response;
+            return result.flatMap(inner -> inner);
         }
     }
 }

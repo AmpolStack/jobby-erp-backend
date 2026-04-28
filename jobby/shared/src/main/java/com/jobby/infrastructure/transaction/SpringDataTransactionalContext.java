@@ -6,9 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import java.util.function.Supplier;
 
-public class TransactionalContext {
+public class SpringDataTransactionalContext {
     @Transactional
-    public <E> Result<E, com.jobby.domain.mobility.error.Error> run(Supplier<Result<E, com.jobby.domain.mobility.error.Error>> supplier) {
+    public <E> Result<E, Error> run(Supplier<Result<E, Error>> supplier) {
         var response = supplier.get();
 
         if(response.isFailure()){
