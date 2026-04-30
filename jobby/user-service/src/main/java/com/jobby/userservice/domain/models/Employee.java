@@ -1,5 +1,8 @@
 package com.jobby.userservice.domain.models;
 
+import com.jobby.domain.mobility.error.Error;
+import com.jobby.domain.mobility.result.Result;
+import com.jobby.domain.mobility.validator.ValidationChain;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +18,18 @@ public class Employee {
     private Instant createdAt;
     private Instant modifiedAt;
 
+    public static Result<Employee, Error> create(long id,
+                                                 Address address,
+                                                 int sectionalId,
+                                                 String positionName) {
+        return ValidationChain.create()
+                .validateNotNull(address, "address")
+                .validateNotBlank(positionName, "position name")
+                .build()
+                .map(v -> new Employee(id, address, sectionalId, positionName,
+                        Instant.now(), Instant.now()));
+    }
+
     public static Employee reconstruct(long id,
                                 Address address,
                                 int sectionalId,
@@ -29,3 +44,4 @@ public class Employee {
                 modifiedAt);
     }
 }
+

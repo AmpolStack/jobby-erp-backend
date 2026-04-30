@@ -3,12 +3,13 @@ package com.jobby.userservice.domain.models;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import java.time.Instant;
 
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Address {
     private Long id;
     private Municipality municipality;
@@ -38,3 +39,4 @@ public class Address {
         return new Address(id, municipality, direction, createdAt, modifiedAt);
     }
 }
+

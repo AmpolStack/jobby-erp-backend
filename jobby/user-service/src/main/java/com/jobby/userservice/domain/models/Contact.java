@@ -23,19 +23,17 @@ public class Contact {
                                                 String name,
                                                 String description,
                                                 boolean isPublic,
-                                                String value,
-                                                ContactType contactType){
+                                                ContactValue contact){
         return ValidationChain.create()
                 .validateNotBlank(name, "contact name")
-                .validateNotNull(contactType, "contact type")
+                .validateNotNull(contact, "contact value")
                 .build()
-                .flatMap(v -> ContactValue.of(value, contactType))
-                .map(contactValueVo -> new Contact(id,
+                .map(v -> new Contact(id,
                         contactTypeId,
                         name,
                         description,
                         isPublic,
-                        contactValueVo));
+                        contact));
     }
 
     public static Contact reconstruct(long id,
@@ -43,12 +41,13 @@ public class Contact {
                                       String name,
                                       String description,
                                       boolean isPublic,
-                                      String value){
+                                      ContactValue value){
         return new Contact(id,
                 contactTypeId,
                 name,
                 description,
                 isPublic,
-                ContactValue.on(value));
+                value);
     }
 }
+

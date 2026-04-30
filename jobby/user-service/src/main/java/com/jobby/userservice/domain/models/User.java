@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.Set;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
     private Long id;
@@ -27,58 +26,55 @@ public class User {
     private Instant modifiedAt;
 
     public static Result<User, Error> create(long id, int identificationTypeId,
-            String firstName, String lastName, String role,
-            String identificationNumber, IdentificationType identificationType,
-            String email, String phone) {
-        var user = new User();
+            Name firstName, Name lastName, String role,
+            IdentificationNumber identificationNumber, Email email, Phone phone) {
+
         return ValidationChain.create()
                 .validateNotBlank(role, "role")
+                .validateNotNull(firstName, "first name")
+                .validateNotNull(lastName, "last name")
+                .validateNotNull(identificationNumber, "identification number")
+                .validateNotNull(phone, "phone number")
                 .build()
-                .flatMap(v -> Name.of(firstName, "first name"))
-                .peek(obj -> user.firstName = obj)
-                .flatMap(v -> Name.of(lastName, "last name"))
-                .peek(obj -> user.lastName = obj)
-                .flatMap(v -> IdentificationNumber.of(identificationNumber, identificationType))
-                .peek(obj -> user.identificationNumber = obj)
-                .flatMap(v -> Email.of(email))
-                .peek(obj -> user.email = obj)
-                .flatMap(v -> Phone.of(phone))
-                .map(obj -> {
-                    user.phone = obj;
-                    user.id = id;
-                    user.identificationTypeId = identificationTypeId;
-                    user.role = role;
-                    user.isActive = true;
-                    user.createdAt = Instant.now();
-                    user.modifiedAt = Instant.now();
-                    return user;
-                });
+                .map(v -> new User(id,
+                        null,
+                        identificationTypeId,
+                        firstName,
+                        lastName,
+                        role,
+                        true,
+                        null,
+                        identificationNumber,
+                        email,
+                        phone,
+                        Instant.now(),
+                        Instant.now()));
     }
 
     public static User reconstruct(long id,
                                    Set<Contact> contacts,
                                    int identificationTypeId,
-                                   String firstName,
-                                   String lastName,
+                                   Name firstName,
+                                   Name lastName,
                                    String role,
                                    boolean isActive,
-                                   String profileImageUrl,
-                                   String identificationNumber,
-                                   String email,
-                                   String phone,
+                                   ImageUrl profileImageUrl,
+                                   IdentificationNumber identificationNumber,
+                                   Email email,
+                                   Phone phone,
                                    Instant createdAt,
                                    Instant modifiedAt){
         return new User(id,
                 contacts,
                 identificationTypeId,
-                Name.on(firstName),
-                Name.on(lastName),
+                firstName,
+                lastName,
                 role,
                 isActive,
-                ImageUrl.on(profileImageUrl),
-                IdentificationNumber.on(identificationNumber),
-                Email.on(email),
-                Phone.on(phone),
+                profileImageUrl,
+                identificationNumber,
+                email,
+                phone,
                 createdAt,
                 modifiedAt);
     }
