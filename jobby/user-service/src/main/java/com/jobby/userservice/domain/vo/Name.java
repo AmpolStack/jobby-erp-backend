@@ -28,7 +28,8 @@ public class Name {
                 });
     }
 
-    public static Name on(String value){
+    public static Name reconstruct(String value){
         return new Name(value);
     }
 }
+

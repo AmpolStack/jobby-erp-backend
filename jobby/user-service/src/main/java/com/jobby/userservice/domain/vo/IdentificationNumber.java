@@ -37,7 +37,7 @@ public class IdentificationNumber {
                 });
     }
 
-    public static IdentificationNumber on(String number){
+    public static IdentificationNumber reconstruct(String number){
         return new IdentificationNumber(number);
     }
 
@@ -56,4 +56,3 @@ public class IdentificationNumber {
     }
 
 }
-

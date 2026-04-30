@@ -6,7 +6,6 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import lombok.*;
-import java.awt.*;
 import java.util.Set;
 
 @Getter
@@ -33,7 +32,7 @@ public class ImageUrl {
                         .map(v2 -> new ImageUrl(value)));
     }
 
-    public static ImageUrl on(String value){
+    public static ImageUrl reconstruct(String value){
         return new ImageUrl(value);
     }
 
@@ -44,3 +43,4 @@ public class ImageUrl {
         return ALLOWED_EXTENSIONS.contains(extension);
     }
 }
+

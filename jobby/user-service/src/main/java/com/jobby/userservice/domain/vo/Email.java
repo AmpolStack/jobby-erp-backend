@@ -12,7 +12,7 @@ import lombok.*;
 public class Email {
     private String email;
     private static final String REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-    private static final String FIELD_NAME = "email address";
+    private static final String FIELD_NAME = "recoveryEmail address";
 
     public static Result<Email, Error> of(String email){
         return ValidationChain.create()
@@ -21,12 +21,13 @@ public class Email {
                 .flatMap(v -> ValidationChain.create()
                         .validateIf(!email.matches(REGEX),
                                 () -> Result.failure(ErrorType.VALIDATION_ERROR,
-                                        new Field("email", "The email address is invalid.")))
+                                        new Field("recoveryEmail", "The recoveryEmail address is invalid.")))
                         .build())
                 .map(v -> new Email(email));
     }
 
-    public static Email on(String email){
+    public static Email reconstruct(String email){
         return new Email(email);
     }
 }
+

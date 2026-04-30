@@ -26,7 +26,7 @@ public class ContactValue {
                         .map(v2 -> new ContactValue(value)));
     }
 
-    public static ContactValue on(String value){
+    public static ContactValue reconstruct(String value){
         return new ContactValue(value);
     }
 
@@ -41,3 +41,4 @@ public class ContactValue {
     }
 
 }
+

@@ -26,7 +26,8 @@ public class Phone {
                 .map(v -> new Phone(number));
     }
 
-    public static Phone on(String number){
+
+    public static Phone reconstruct(String number){
         return new Phone(number);
     }
 
@@ -37,3 +38,4 @@ public class Phone {
         return "(" + PREFIX + ") " + this.getNumber();
     }
 }
+
