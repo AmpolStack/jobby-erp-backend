@@ -2,11 +2,11 @@ package com.jobby.infrastructure.response.implementation.problemdetails;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.infrastructure.response.definition.APIMapper;
+import com.jobby.infrastructure.response.definition.HttpResponseProcessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-public class ProblemDetailsResultMapper implements APIMapper {
+public class ProblemDetailsResultMapper implements HttpResponseProcessor {
     
     public <T> ResponseEntity<?> map(Result<T, Error> result, HttpStatus successStatus) {
         if (result.isFailure()) {

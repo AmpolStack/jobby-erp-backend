@@ -2,12 +2,12 @@ package com.jobby.infrastructure.response.implementation.result;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.infrastructure.response.definition.APIMapper;
+import com.jobby.infrastructure.response.definition.HttpResponseProcessor;
 import com.jobby.infrastructure.response.definition.ErrorTypeHttpCollection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-public class ResultHttpMapper implements APIMapper {
+public class ResultHttpMapper implements HttpResponseProcessor {
     public <T> ResponseEntity<Result<T, Error>> map(
             Result<T, Error> result, HttpStatus successState)
     {
