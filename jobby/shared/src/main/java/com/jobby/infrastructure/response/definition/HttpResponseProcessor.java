@@ -5,7 +5,7 @@ import com.jobby.domain.mobility.result.Result;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-public interface APIMapper {
+public interface HttpResponseProcessor {
     <T> ResponseEntity<?> map(Result<T, Error> result, HttpStatus successStatus);
     <T> ResponseEntity<?> map(Result<T, Error> result);
 }
