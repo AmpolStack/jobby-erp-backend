@@ -10,7 +10,6 @@ import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
-
 import java.time.Duration;
 
 public class RedisCacheService implements CacheService {
@@ -30,7 +29,7 @@ public class RedisCacheService implements CacheService {
     );
 
     @Override
-    public <T> Result<Void, Error> put(String key, T value, Duration ttl) {
+    public <T> Result<Void, Error> register(String key, T value, Duration ttl) {
         return ValidationChain.create()
                 .validateInternalNotBlank(key, "cache-key")
                 .build()
@@ -95,7 +94,7 @@ public class RedisCacheService implements CacheService {
     }
 
     @Override
-    public Result<Void, Error> evict(String key) {
+    public Result<Void, Error> remove(String key) {
         return ValidationChain.create()
                 .validateInternalNotBlank(key, "cache-key")
                 .build()
