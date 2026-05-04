@@ -10,8 +10,6 @@ import com.jobby.userservice.domain.vo.Phone;
 import com.jobby.userservice.infrastructure.mappers.common.DomainVOMapper;
 import com.jobby.userservice.infrastructure.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoUserEntity;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -30,16 +28,18 @@ public abstract class MongoUserMapper {
     public User toDomain(MongoUserEntity entity) {
         if(entity == null) return null;
         return User.reconstruct(entity.getId(),
+                entity.getOrganizationId(),
+                entity.getSectionalId(),
                 mongoContactMapper.toDomain(entity.getContacts()),
                 entity.getIdentificationTypeId(),
-                securedFieldMapper.fromProtectedField(entity.getFirstName()),
-                securedFieldMapper.fromProtectedField(entity.getLastName()),
+                domainVOMapper.toName(securedFieldMapper.fromProtectedField(entity.getFirstName())),
+                domainVOMapper.toName(securedFieldMapper.fromProtectedField(entity.getLastName())),
                 entity.getRole(),
                 entity.isActive(),
-                entity.getProfileImageUrl(),
-                securedFieldMapper.fromIndexedField(entity.getIdentificationNumber()),
-                securedFieldMapper.fromIndexedField(entity.getEmail()),
-                securedFieldMapper.fromIndexedField(entity.getPhone()),
+                domainVOMapper.toImageUrl(entity.getProfileImageUrl()),
+                domainVOMapper.toIdentificationNumber(securedFieldMapper.fromIndexedField(entity.getIdentificationNumber())),
+                domainVOMapper.toEmail(securedFieldMapper.fromIndexedField(entity.getEmail())),
+                domainVOMapper.toPhone(securedFieldMapper.fromIndexedField(entity.getPhone())),
                 entity.getCreatedAt(),
                 entity.getModifiedAt());
     }
@@ -49,8 +49,8 @@ public abstract class MongoUserMapper {
     @Mapping(target = "lastName", source = "lastName", qualifiedByName = "fromNameToProtectedField")
     @Mapping(target = "profileImageUrl", source = "profileImageUrl", qualifiedByName = "fromImageUrl")
     @Mapping(target = "identificationNumber", source = "identificationNumber", qualifiedByName = "fromIdentificationNumberToIndexedField")
-    @Mapping(target = "email", source = "email", qualifiedByName = "fromEmailToIndexedField")
     @Mapping(target = "phone", source = "phone", qualifiedByName = "fromPhoneToIndexedField")
+    @Mapping(target = "email", source = "email", qualifiedByName = "fromEmailToIndexedField")
     public abstract MongoUserEntity toEntity(User domain);
 
     @Named("fromNameToProtectedField")

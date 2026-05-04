@@ -23,13 +23,14 @@ public abstract class MongoOwnerMapper {
         if(entity == null) return null;
         return Owner.reconstruct(entity.getId(),
                 entity.getUserId(),
-                this.securedFieldMapper.fromIndexedField(entity.getAlternativeEmail()),
+                entity.getOrganizationId(),
+                domainVOMapper.toEmail(this.securedFieldMapper.fromIndexedField(entity.getRecoveryEmail())),
                 entity.getSecureParameters(),
                 entity.getCreatedAt(),
                 entity.getModifiedAt());
     }
 
-    @Mapping(target = "alternativeEmail", source = "alternativeEmail", qualifiedByName = "fromEmailToIndexedField")
+    @Mapping(target = "recoveryEmail", source = "recoveryEmail", qualifiedByName = "fromEmailToIndexedField")
     public abstract MongoOwnerEntity toEntity(Owner domain);
 
     @Named("fromEmailToIndexedField")

@@ -54,4 +54,34 @@ public interface DomainVOMapper {
         }
         return imageUrl.getValue();
     }
+
+    @Named("toName")
+    default Name toName(String value) {
+        return Name.reconstruct(value);
+    }
+
+    @Named("toEmail")
+    default Email toEmail(String value) {
+        return Email.reconstruct(value);
+    }
+
+    @Named("toPhone")
+    default Phone toPhone(String value) {
+        return Phone.reconstruct(value);
+    }
+
+    @Named("toIdentificationNumber")
+    default IdentificationNumber toIdentificationNumber(String value) {
+        return IdentificationNumber.reconstruct(value);
+    }
+
+    @Named("toImageUrl")
+    default ImageUrl toImageUrl(String value) {
+        return ImageUrl.reconstruct(value);
+    }
+
+    @Named("toContactValue")
+    default ContactValue toContactValue(String value) {
+        return ContactValue.reconstruct(value);
+    }
 }

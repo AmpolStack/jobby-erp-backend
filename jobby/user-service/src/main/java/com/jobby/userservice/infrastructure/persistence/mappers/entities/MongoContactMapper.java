@@ -27,7 +27,7 @@ public abstract class MongoContactMapper {
                 entity.getName(),
                 entity.getDescription(),
                 entity.isPublic(),
-                securedFieldMapper.fromProtectedField(entity.getValue()));
+                domainVOMapper.toContactValue(securedFieldMapper.fromProtectedField(entity.getValue())));
     }
 
     public abstract Set<Contact> toDomain(Set<MongoContactEntity> entities);

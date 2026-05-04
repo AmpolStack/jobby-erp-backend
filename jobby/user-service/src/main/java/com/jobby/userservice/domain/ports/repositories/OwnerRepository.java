@@ -7,4 +7,5 @@ import com.jobby.userservice.domain.models.Owner;
 
 public interface OwnerRepository {
     Result<PersistenceTask, Error> prepareSave(Owner owner);
+    Result<Owner, Error> getById(long id);
 }
