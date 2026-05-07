@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.ports.repositories;
+package com.jobby.userservice.domain.ports.out.repositories.models;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
