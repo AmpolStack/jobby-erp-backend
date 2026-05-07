@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.autoconfiguration;
 
+import com.jobby.infrastructure.adapter.FileStorageServiceAdapter;
 import com.jobby.infrastructure.configurations.FileStorageConfig;
 import com.jobby.infrastructure.configurations.FileStorageSetupConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -13,6 +14,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
 
@@ -49,7 +51,31 @@ public class FileStorageServiceAutoConfiguration {
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())
-                .forcePathStyle(true)
                 .build();
     }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public S3Presigner s3Presigner(FileStorageSetupConfig config) {
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getAccessKey(), config.getSecretKey());
+
+        return S3Presigner.builder()
+                .endpointOverride(URI.create(config.getEndpoint()))
+                .region(Region.US_EAST_1)
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(credentials)
+                )
+                .build();
+    }
+
+    @ConditionalOnMissingBean
+    @Bean
+    public FileStorageServiceAdapter fileStorageServiceAdapter(
+            S3Client client,
+            S3Presigner presigner,
+            FileStorageConfig config
+    ){
+        return new FileStorageServiceAdapter(client, presigner, config);
+    }
+
 }
