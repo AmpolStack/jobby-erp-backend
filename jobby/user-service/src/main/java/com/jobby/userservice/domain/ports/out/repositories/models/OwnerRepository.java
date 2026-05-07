@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.ports;
+package com.jobby.userservice.domain.ports.repositories;
 
 import com.jobby.domain.functional.PersistenceTask;
 import com.jobby.domain.mobility.error.Error;
@@ -8,4 +8,5 @@ import com.jobby.userservice.domain.models.Owner;
 public interface OwnerRepository {
     Result<PersistenceTask, Error> prepareSave(Owner owner);
     Result<Owner, Error> getById(long id);
+    Result<Owner, Error> getByUserId(long userId);
 }

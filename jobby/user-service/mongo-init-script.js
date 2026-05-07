@@ -362,10 +362,10 @@ db.createCollection("owners", {
           bsonType: "long",
           description: "Reference to the associated user id"
         },
-        alternative_email: {
+        recovery_email: {
           bsonType: "object",
           required: ["data", "index"],
-          description: "Indexed alternative email (encrypted + searchable)",
+          description: "Indexed recovery email (encrypted + searchable)",
           properties: {
             data: { bsonType: "binData" },
             index: { bsonType: "binData" }
@@ -520,7 +520,7 @@ db.users.createIndex({ "phone.index": 1 }, { unique: true, name: "idx_users_phon
 db.users.createIndex({ "role": 1 }, { name: "idx_users_role" });
 
 db.owners.createIndex({ "user_id": 1 }, { unique: true, name: "idx_owners_user_id" });
-db.owners.createIndex({ "alternative_email.index": 1 }, { unique: true, sparse: true, name: "idx_owners_alt_email_index" });
+db.owners.createIndex({ "recovery_email.index": 1 }, { sparse: true, name: "idx_owners_recovery_email_index" });
 
 db.municipalities.createIndex({ "department._id": 1 }, { name: "idx_municipalities_department" });
 db.municipalities.createIndex({ "dane_code": 1 }, { unique: true, name: "idx_municipalities_dane_code" });

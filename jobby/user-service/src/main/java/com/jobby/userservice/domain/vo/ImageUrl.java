@@ -13,7 +13,9 @@ import java.util.Set;
 public class ImageUrl {
     private String value;
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
-    private static final String URL_REGEX = "^https://[\\w.-]+\\.[a-zA-Z]{2,}(/[\\w./%-]+)?$";
+    // TODO: replace for https in production
+    private static final String URL_REGEX =
+            "^https?://(localhost|[\\w.-]+\\.[a-zA-Z]{2,})(:\\d+)?(/[\\w./%-]+)?$";
 
     public static Result<ImageUrl, Error> of(String value) {
         return ValidationChain.create()

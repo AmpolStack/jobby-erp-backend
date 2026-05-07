@@ -7,8 +7,6 @@ import com.jobby.userservice.domain.vo.Email;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.util.Map;
 
@@ -17,7 +15,7 @@ import java.util.Map;
 public class Owner {
     private Long id;
     private Long userId;
-    private Email alternativeEmail;
+    private Email recoveryEmail;
     private Map<String, String> secureParameters;
     private Instant createdAt;
     private Instant modifiedAt;
@@ -39,9 +37,14 @@ public class Owner {
                 .validateNotNull(recoveryEmail, "owner recovery recoveryEmail")
                 .build()
                 .peek(v -> {
-                    alternativeEmail = recoveryEmail;
-                    modifiedAt = Instant.now();
+                    this.recoveryEmail= recoveryEmail;
+                    this.modifiedAt = Instant.now();
                 });
+    }
+
+    public void removeRecoveryEmail() {
+        this.recoveryEmail = null;
+        this.modifiedAt = Instant.now();
     }
 
     public static Owner reconstruct(long id,

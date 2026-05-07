@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.ports;
+package com.jobby.userservice.domain.ports.repositories;
 
 import com.jobby.domain.functional.PersistenceTask;
 import com.jobby.domain.mobility.error.Error;
