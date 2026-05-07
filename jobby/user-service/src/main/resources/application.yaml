@@ -2,6 +2,10 @@ spring:
   application:
     name: user-service
   data:
+    redis:
+      host: localhost
+      port: 6379
+      password: d0P!fy641H^*
     mongodb:
       username: jobby-root
       password: jRq2)24
@@ -9,7 +13,21 @@ spring:
       port: 27017
       host: localhost
       authentication-database: admin
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
 app:
+  file-storage:
+    setup:
+      access-key: admin
+      secret-key: adminpassword
+      endpoint: http://localhost:9001
+    sources:
+      endpoint: http://localhost:9001
+      bucket: jobby-bucket
   id:
     datacenter-id: 1
     worker-id: 1
