@@ -11,6 +11,8 @@ public interface CreateOwnerCommandMapper {
     default Result<Owner, Error> toOwner(CreateOwnerCommand command,
                                          long ownerId,
                                          long userId) {
-        return Owner.create(ownerId, userId, command.getSecureParameters());
+        return Owner.create(ownerId,
+                userId,
+                command.secureParameters());
     }
 }

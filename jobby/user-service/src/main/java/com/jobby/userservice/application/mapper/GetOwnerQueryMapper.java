@@ -16,7 +16,7 @@ public abstract class GetOwnerQueryMapper {
         if (owner == null) return null;
         return new GetOwnerQuery(
                 this.getUserQueryMapper.toGetUserQuery(user),
-                owner.getAlternativeEmail() != null ? owner.getAlternativeEmail().getEmail() : null
+                owner.getRecoveryEmail() != null ? owner.getRecoveryEmail().getEmail() : null
         );
     }
 }

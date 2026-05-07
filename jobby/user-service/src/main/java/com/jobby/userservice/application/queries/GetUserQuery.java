@@ -1,28 +1,20 @@
 package com.jobby.userservice.application.queries;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.jobby.userservice.domain.enums.Role;
 
 import java.time.Instant;
 import java.util.Set;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class GetUserQuery {
-    private Set<GetContactQuery> contacts;
-    private int identificationTypeId;
-    private String firstName;
-    private String lastName;
-    private String role;
-    private boolean isActive;
-    private String profileImageUrl;
-    private String identificationNumber;
-    private String email;
-    private String phone;
-    private Instant createdAt;
-    private Instant modifiedAt;
+public record GetUserQuery(Set<GetContactQuery> contacts,
+                           int identificationTypeId,
+                           String firstName,
+                           String lastName,
+                           Role role,
+                           boolean isActive,
+                           String profileImageUrl,
+                           String identificationNumber,
+                           String email,
+                           String phone,
+                           Instant createdAt,
+                           Instant modifiedAt) {
 }
