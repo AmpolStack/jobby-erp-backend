@@ -16,9 +16,10 @@ import com.jobby.userservice.application.mapper.GetOwnerQueryMapper;
 import com.jobby.userservice.application.queries.GetOwnerQuery;
 import com.jobby.userservice.domain.models.Owner;
 import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.domain.ports.IdentificationTypeRepository;
-import com.jobby.userservice.domain.ports.OwnerRepository;
-import com.jobby.userservice.domain.ports.UserRepository;
+import com.jobby.userservice.domain.ports.out.repositories.models.IdentificationTypeRepository;
+import com.jobby.userservice.domain.ports.out.repositories.models.OwnerRepository;
+import com.jobby.userservice.domain.ports.out.repositories.models.UserRepository;
+import com.jobby.userservice.domain.enums.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,9 +37,9 @@ public class CreateOwnerUseCase {
     private final CreateOwnerCommandMapper createOwnerCommandMapper;
 
     public Result<GetOwnerQuery, Error> execute(CreateOwnerCommand command) {
-        var userCmd = command.getUser();
+        var userCmd = command.user();
         return validateUniqueness(userCmd)
-                .flatMap(v -> prepareUser(command.getUser()))
+                .flatMap(v -> prepareUser(command.user()))
                 .flatMap((userTuple) ->
                         prepareOwner(command, userTuple.getValue().getId())
                         .flatMap(ownerTuple ->
@@ -54,23 +55,23 @@ public class CreateOwnerUseCase {
     }
 
     private Result<Void, Error> validateUniqueness(CreateUserCommand userCmd) {
-        return this.userRepository.existByEmail(userCmd.getEmail())
+        return this.userRepository.existByEmail(userCmd.email())
                 .flatMap(exist -> exist
-                        ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "A user with that email address already exists."))
-                        : this.userRepository.existByPhone(userCmd.getPhone()))
+                        ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "A user with that recoveryEmail address already exists."))
+                        : this.userRepository.existByPhone(userCmd.phone()))
                 .flatMap(exist -> exist
                         ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "There is already a registered user with that phone number."))
-                        : this.userRepository.existByIdentificationNumber(userCmd.getIdentificationNumber()))
+                        : this.userRepository.existByIdentificationNumber(userCmd.identificationNumber()))
                 .flatMap(exist -> exist
                         ? Result.failure(ErrorType.VALIDATION_ERROR, new Field("user", "A user with that identification number is already registered."))
                         : Result.success());
     }
 
     private Result<Pair<PersistenceTask, User>,Error> prepareUser(CreateUserCommand cmd){
-        return this.identificationTypeRepository.findById(cmd.getIdentificationTypeId())
+        return this.identificationTypeRepository.findById(cmd.identificationTypeId())
                 .flatMap(identificationType -> this.idGenerator.next()
                         .flatMap(userId ->
-                                this.createUserCommandMapper.toUser(cmd, userId, "owner", identificationType))
+                                this.createUserCommandMapper.toUser(cmd, userId, Role.OWNER, identificationType))
                 .flatMap(user -> this.userRepository.prepareSave(user)
                         .map(task -> Pair.of(task, user)))
                 );
