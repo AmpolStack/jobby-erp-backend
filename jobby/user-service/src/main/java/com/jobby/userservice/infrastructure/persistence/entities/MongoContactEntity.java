@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Getter
 @Setter
 public class MongoContactEntity {
-    @Id
+
+    /** Stored as _id within the embedded subdocument — NOT a Spring Data aggregate root ID. */
     @Field("_id")
     private Long id;
 
@@ -32,3 +32,4 @@ public class MongoContactEntity {
     @NotNull
     private ProtectedField value;
 }
+

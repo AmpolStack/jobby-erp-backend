@@ -1,7 +1,7 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.userservice.domain.models.Address;
-import com.jobby.userservice.infrastructure.mappers.common.SecuredFieldMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoAddressEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

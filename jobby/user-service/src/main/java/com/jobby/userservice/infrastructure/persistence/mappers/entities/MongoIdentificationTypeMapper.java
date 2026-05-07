@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 import com.jobby.userservice.domain.models.IdentificationType;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoIdentificationTypeEntity;
 import org.mapstruct.Mapper;

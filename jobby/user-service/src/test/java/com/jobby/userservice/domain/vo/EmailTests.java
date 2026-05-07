@@ -19,22 +19,22 @@ public class EmailTests {
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When email is {1}")
-        @DisplayName("Given email is null or blank, when of is called, then returns validation failure")
+        @ParameterizedTest(name = "When recoveryEmail is {1}")
+        @DisplayName("Given recoveryEmail is null or blank, when of is called, then returns validation failure")
         @MethodSource("casesOfNullity")
         void of_WhenEmailIsNullOrBlank_ShouldReturnValidationFailure(String email,
                                                                      String nullityType) {
             var result = Email.of(email);
 
             var expected = ValidationChain.create()
-                    .validateNotBlank(email, "email address")
+                    .validateNotBlank(email, "recoveryEmail address")
                     .build();
 
             ResultAssertions.assertFailure(result, expected);
         }
 
-        @ParameterizedTest(name = "When email is -> [{0}]")
-        @DisplayName("Given email has invalid format, when of is called, then returns validation failure")
+        @ParameterizedTest(name = "When recoveryEmail is -> [{0}]")
+        @DisplayName("Given recoveryEmail has invalid format, when of is called, then returns validation failure")
         @MethodSource("casesOfInvalidFormat")
         void of_WhenEmailHasInvalidFormat_ShouldReturnValidationFailure(String email) {
             var result = Email.of(email);
@@ -42,8 +42,8 @@ public class EmailTests {
             ResultAssertions.assertFailure(result);
         }
 
-        @ParameterizedTest(name = "When email is -> [{0}]")
-        @DisplayName("Given email is valid, when of is called, then returns success and stores email")
+        @ParameterizedTest(name = "When recoveryEmail is -> [{0}]")
+        @DisplayName("Given recoveryEmail is valid, when of is called, then returns success and stores recoveryEmail")
         @ValueSource(strings = {
                 "user@example.com",
                 "user.name+tag@sub.domain.org",
@@ -66,11 +66,11 @@ public class EmailTests {
 
         private static Stream<Arguments> casesOfInvalidFormat() {
             return Stream.of(
-                    Arguments.of("not-an-email"),
+                    Arguments.of("not-an-recoveryEmail"),
                     Arguments.of("missing@tld"),          // no dot after TLD
                     Arguments.of("@nodomain.com"),
                     Arguments.of("no-at-sign.com"),
-                    Arguments.of("spaces in@email.com"),
+                    Arguments.of("spaces in@recoveryEmail.com"),
                     Arguments.of("double@@at.com")
             );
         }
@@ -79,8 +79,8 @@ public class EmailTests {
     @Nested
     class OnMethod {
 
-        @ParameterizedTest(name = "When email -> [{0}]")
-        @DisplayName("on() always sets the raw email without validation")
+        @ParameterizedTest(name = "When recoveryEmail -> [{0}]")
+        @DisplayName("on() always sets the raw recoveryEmail without validation")
         @MethodSource("casesOfOn")
         void on_AlwaysSetsEmail(String email) {
             var result = Email.on(email);
@@ -93,7 +93,7 @@ public class EmailTests {
                     Arguments.of((Object) null),
                     Arguments.of(""),
                     Arguments.of(VALID_EMAIL),
-                    Arguments.of("not-an-email-no-validation")
+                    Arguments.of("not-an-recoveryEmail-no-validation")
             );
         }
     }

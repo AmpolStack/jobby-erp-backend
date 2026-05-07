@@ -1,10 +1,10 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.infrastructure.security.fields.ProtectedField;
 import com.jobby.userservice.domain.models.Contact;
 import com.jobby.userservice.domain.vo.ContactValue;
-import com.jobby.userservice.infrastructure.mappers.common.DomainVOMapper;
-import com.jobby.userservice.infrastructure.mappers.common.SecuredFieldMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.DomainVOMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoContactEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

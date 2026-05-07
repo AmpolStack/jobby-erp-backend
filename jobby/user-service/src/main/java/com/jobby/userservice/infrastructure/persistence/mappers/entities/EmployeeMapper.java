@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.userservice.domain.models.Employee;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoEmployeeEntity;

@@ -6,15 +6,15 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.infrastructure.transaction.proxy.PersistenceProxy;
 import com.jobby.userservice.domain.models.IdentificationType;
-import com.jobby.userservice.domain.ports.IdentificationTypeRepository;
-import com.jobby.userservice.infrastructure.mappers.entities.MongoIdentificationTypeMapper;
+import com.jobby.userservice.domain.ports.out.repositories.models.IdentificationTypeRepository;
+import com.jobby.userservice.infrastructure.persistence.mappers.entities.MongoIdentificationTypeMapper;
 import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoIdentificationTypeRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class IdentificationTypeRepositoryAdapter implements IdentificationTypeRepository {
 

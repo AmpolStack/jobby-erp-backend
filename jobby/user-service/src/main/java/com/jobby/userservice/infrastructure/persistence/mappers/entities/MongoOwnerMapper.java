@@ -1,10 +1,10 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
 import com.jobby.userservice.domain.models.Owner;
 import com.jobby.userservice.domain.vo.Email;
-import com.jobby.userservice.infrastructure.mappers.common.DomainVOMapper;
-import com.jobby.userservice.infrastructure.mappers.common.SecuredFieldMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.DomainVOMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoOwnerEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,7 +23,6 @@ public abstract class MongoOwnerMapper {
         if(entity == null) return null;
         return Owner.reconstruct(entity.getId(),
                 entity.getUserId(),
-                entity.getOrganizationId(),
                 domainVOMapper.toEmail(this.securedFieldMapper.fromIndexedField(entity.getRecoveryEmail())),
                 entity.getSecureParameters(),
                 entity.getCreatedAt(),

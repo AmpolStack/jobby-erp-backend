@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.mappers.common;
+package com.jobby.userservice.infrastructure.persistence.mappers.common;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
 import com.jobby.infrastructure.security.fields.ProtectedField;

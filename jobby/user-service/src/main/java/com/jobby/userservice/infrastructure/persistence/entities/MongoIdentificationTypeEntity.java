@@ -31,19 +31,20 @@ public class MongoIdentificationTypeEntity {
     private int maxLength;
 
     @NotBlank
-    @Size(max = 50, message = "It cannot contain more than 100 characters")
+    @Size(max = 50, message = "It cannot contain more than 50 characters")
     private String name;
 
     @NotBlank
-    @Size(max=200, message = "It cannot contain more than 200 characters")
+    @Size(max = 200, message = "It cannot contain more than 200 characters")
     private String expression;
 
     @NotBlank
-    @Size(max=5, message = "It cannot contain more than 100 characters")
+    @Size(max = 5, message = "It cannot contain more than 5 characters")
     private String abbreviation;
 
     @NotNull
     @Field("allow_characters")
-    private Set<@Size(max=15,message = "It cannot contain more than 15 characters") String> allowCharacters;
+    private Set<@Size(max = 15, message = "It cannot contain more than 15 characters") String> allowCharacters;
 
 }
+

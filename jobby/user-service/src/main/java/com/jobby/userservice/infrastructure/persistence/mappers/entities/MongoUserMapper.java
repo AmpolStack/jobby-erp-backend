@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.mappers.entities;
+package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
 import com.jobby.infrastructure.security.fields.ProtectedField;
@@ -7,8 +7,8 @@ import com.jobby.userservice.domain.vo.Email;
 import com.jobby.userservice.domain.vo.IdentificationNumber;
 import com.jobby.userservice.domain.vo.Name;
 import com.jobby.userservice.domain.vo.Phone;
-import com.jobby.userservice.infrastructure.mappers.common.DomainVOMapper;
-import com.jobby.userservice.infrastructure.mappers.common.SecuredFieldMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.DomainVOMapper;
+import com.jobby.userservice.infrastructure.persistence.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoUserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -28,8 +28,6 @@ public abstract class MongoUserMapper {
     public User toDomain(MongoUserEntity entity) {
         if(entity == null) return null;
         return User.reconstruct(entity.getId(),
-                entity.getOrganizationId(),
-                entity.getSectionalId(),
                 mongoContactMapper.toDomain(entity.getContacts()),
                 entity.getIdentificationTypeId(),
                 domainVOMapper.toName(securedFieldMapper.fromProtectedField(entity.getFirstName())),

@@ -21,12 +21,15 @@ public class MongoOwnerEntity {
     @Field("_id")
     private Long id;
 
+    @Field("organization_id")
+    private Long organizationId;
+
     @NotNull
     @Field("user_id")
     private Long userId;
 
-    @Field("alternative_email")
-    private IndexedField alternativeEmail;
+    @Field("recovery_email")
+    private IndexedField recoveryEmail;
 
     @Field("secure_parameters")
     private Map<
