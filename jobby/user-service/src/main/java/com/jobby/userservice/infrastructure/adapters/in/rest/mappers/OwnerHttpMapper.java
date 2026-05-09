@@ -1,16 +1,13 @@
 package com.jobby.userservice.infrastructure.adapters.in.mappers;
 
-import com.jobby.userservice.application.commands.CreateOwnerCommand;
-import com.jobby.userservice.application.commands.CreateUserCommand;
-import com.jobby.userservice.application.commands.UpdateRecoveryEmailCommand;
-import com.jobby.userservice.application.queries.GetContactQuery;
-import com.jobby.userservice.application.queries.GetOwnerQuery;
-import com.jobby.userservice.application.queries.GetUserQuery;
+import com.jobby.userservice.domain.commands.CreateOwnerCommand;
+import com.jobby.userservice.domain.commands.CreateUserCommand;
+import com.jobby.userservice.domain.commands.UpdateRecoveryEmailCommand;
+import com.jobby.userservice.domain.responses.ContactResponse;
+import com.jobby.userservice.domain.responses.OwnerResponse;
+import com.jobby.userservice.domain.responses.UserResponse;
 import com.jobby.userservice.infrastructure.adapters.in.requests.CreateOwnerRequest;
 import com.jobby.userservice.infrastructure.adapters.in.requests.UpdateRecoveryEmailRequest;
-import com.jobby.userservice.infrastructure.adapters.in.responses.ContactResponse;
-import com.jobby.userservice.infrastructure.adapters.in.responses.OwnerResponse;
-import com.jobby.userservice.infrastructure.adapters.in.responses.UserResponse;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -43,10 +40,10 @@ public interface OwnerHttpMapper {
     }
 
 
-    ContactResponse toContactResponse(GetContactQuery query);
+    com.jobby.userservice.infrastructure.adapters.in.responses.ContactResponse toContactResponse(ContactResponse query);
 
-    UserResponse toUserResponse(GetUserQuery query);
+    com.jobby.userservice.infrastructure.adapters.in.responses.UserResponse toUserResponse(UserResponse query);
 
-    OwnerResponse toOwnerResponse(GetOwnerQuery query);
+    com.jobby.userservice.infrastructure.adapters.in.responses.OwnerResponse toOwnerResponse(OwnerResponse query);
 }
 

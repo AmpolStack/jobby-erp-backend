@@ -1,11 +1,11 @@
-package com.jobby.userservice.application.queries;
+package com.jobby.userservice.domain.responses;
 
-import com.jobby.userservice.domain.enums.Role;
+import com.jobby.userservice.domain.models.enums.Role;
 
 import java.time.Instant;
 import java.util.Set;
 
-public record GetUserQuery(Set<GetContactQuery> contacts,
+public record UserResponse(Set<ContactResponse> contacts,
                            int identificationTypeId,
                            String firstName,
                            String lastName,

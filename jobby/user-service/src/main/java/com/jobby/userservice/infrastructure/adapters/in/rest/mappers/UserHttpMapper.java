@@ -4,7 +4,7 @@ import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.userservice.application.commands.UploadImageCommand;
+import com.jobby.userservice.domain.commands.UploadImageCommand;
 import org.mapstruct.Mapper;
 import org.springframework.web.multipart.MultipartFile;
 

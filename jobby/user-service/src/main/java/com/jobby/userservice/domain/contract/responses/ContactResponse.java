@@ -1,7 +1,7 @@
-package com.jobby.userservice.application.queries;
+package com.jobby.userservice.domain.responses;
 
 
-public record GetContactQuery(String name,
+public record ContactResponse(String name,
                               String description,
                               boolean isPublic,
                               String value) {

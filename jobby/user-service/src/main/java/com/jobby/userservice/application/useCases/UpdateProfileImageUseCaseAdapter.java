@@ -3,15 +3,14 @@ package com.jobby.userservice.application.useCases;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.TransactionOrchestrator;
-import com.jobby.userservice.application.commands.UploadImageCommand;
-import com.jobby.userservice.application.mapper.GetUserQueryMapper;
-import com.jobby.userservice.application.queries.GetUserQuery;
-import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.domain.ports.out.repositories.models.OwnerRepository;
-import com.jobby.userservice.domain.ports.out.services.ProfileImageRepository;
-import com.jobby.userservice.domain.ports.out.repositories.models.UserRepository;
-import com.jobby.userservice.domain.vo.ImageStorageContext;
-import com.jobby.userservice.domain.vo.ProfileImage;
+import com.jobby.userservice.domain.contract.commands.UploadImageCommand;
+import com.jobby.userservice.domain.contract.responses.UserResponse;
+import com.jobby.userservice.domain.models.aggregate.User;
+import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
+import com.jobby.userservice.domain.ports.out.services.FileStorageService;
+import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
+import com.jobby.userservice.domain.models.vo.ephemeral.ImageStorageContext;
+import com.jobby.userservice.domain.models.vo.ephemeral.ProfileImage;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +18,14 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class UpdateProfileImageUseCase {
 
-    private final ProfileImageRepository profileImageRepository;
+    private final FileStorageService profileImageRepository;
     private final UserRepository userRepository;
     private final OwnerRepository ownerRepository;
 
     private final GetUserQueryMapper getUserQueryMapper;
     private final TransactionOrchestrator transaction;
 
-    public Result<GetUserQuery, Error> execute(UploadImageCommand command){
+    public Result<UserResponse, Error> execute(UploadImageCommand command){
         return this.userRepository.getById(command.userId())
                 .flatMap(user -> switch (user.getRole()){
                         case OWNER -> handleOwner(command, user);
@@ -34,7 +33,7 @@ public class UpdateProfileImageUseCase {
                     });
     }
 
-    private Result<GetUserQuery, Error> handleOwner(UploadImageCommand command, User user) {
+    private Result<UserResponse, Error> handleOwner(UploadImageCommand command, User user) {
         return this.ownerRepository.getByUserId(user.getId())
                 .flatMap(owner -> {
                     var context = new ImageStorageContext.OwnerContext(owner.getId());
@@ -42,7 +41,7 @@ public class UpdateProfileImageUseCase {
                 });
     }
 
-    private Result<GetUserQuery, Error> handleEmployee(UploadImageCommand command, User user) {
+    private Result<UserResponse, Error> handleEmployee(UploadImageCommand command, User user) {
         // TODO: Implements real logic
         var context = new ImageStorageContext.EmployeeContext(
         1, 1,1);
@@ -50,10 +49,10 @@ public class UpdateProfileImageUseCase {
     }
 
 
-    private Result<GetUserQuery, Error> uploadAndUpdate(
+    private Result<UserResponse, Error> uploadAndUpdate(
             UploadImageCommand command, User user, ImageStorageContext context) {
         return ProfileImage.of(command.content(), command.contentType(), context)
-                .flatMap(profileImageRepository::save)
+                .flatMap(profileImageRepository::changeProfileImage)
                 .flatMap(newImageUrl -> {
 
                     if(user.getProfileImageUrl() == null

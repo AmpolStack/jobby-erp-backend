@@ -1,4 +1,4 @@
-package com.jobby.userservice.application.commands;
+package com.jobby.userservice.domain.contract.commands;
 
 
 public record UploadImageCommand(long userId,

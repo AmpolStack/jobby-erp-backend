@@ -8,24 +8,24 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.IdGenerator;
 import com.jobby.domain.ports.TransactionOrchestrator;
-import com.jobby.userservice.application.commands.CreateOwnerCommand;
-import com.jobby.userservice.application.commands.CreateUserCommand;
-import com.jobby.userservice.application.mapper.CreateOwnerCommandMapper;
-import com.jobby.userservice.application.mapper.CreateUserCommandMapper;
-import com.jobby.userservice.application.mapper.GetOwnerQueryMapper;
-import com.jobby.userservice.application.queries.GetOwnerQuery;
-import com.jobby.userservice.domain.models.Owner;
-import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.domain.ports.out.repositories.models.IdentificationTypeRepository;
-import com.jobby.userservice.domain.ports.out.repositories.models.OwnerRepository;
-import com.jobby.userservice.domain.ports.out.repositories.models.UserRepository;
-import com.jobby.userservice.domain.enums.Role;
+import com.jobby.userservice.domain.contract.commands.CreateOwnerCommand;
+import com.jobby.userservice.domain.contract.commands.CreateUserCommand;
+import com.jobby.userservice.application.mappers.CreateOwnerCommandMapper;
+import com.jobby.userservice.application.mappers.CreateUserCommandMapper;
+import com.jobby.userservice.application.mappers.GetOwnerQueryMapper;
+import com.jobby.userservice.domain.contract.responses.OwnerResponse;
+import com.jobby.userservice.domain.models.aggregate.Owner;
+import com.jobby.userservice.domain.models.aggregate.User;
+import com.jobby.userservice.domain.ports.out.repositories.IdentificationTypeRepository;
+import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
+import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
+import com.jobby.userservice.domain.models.enums.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class CreateOwnerUseCase {
+public class CreateOwnerUseCase implements com.jobby.userservice.domain.ports.in.CreateOwnerUseCase {
 
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
@@ -36,7 +36,7 @@ public class CreateOwnerUseCase {
     private final CreateUserCommandMapper createUserCommandMapper;
     private final CreateOwnerCommandMapper createOwnerCommandMapper;
 
-    public Result<GetOwnerQuery, Error> execute(CreateOwnerCommand command) {
+    public Result<OwnerResponse, Error> execute(CreateOwnerCommand command) {
         var userCmd = command.user();
         return validateUniqueness(userCmd)
                 .flatMap(v -> prepareUser(command.user()))

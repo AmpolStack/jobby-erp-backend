@@ -1,4 +1,4 @@
-package com.jobby.userservice.application.commands;
+package com.jobby.userservice.domain.commands;
 
 
 public record CreateUserCommand(int identificationTypeId,
