@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.adapters.in;
+package com.jobby.userservice.infrastructure.adapters.in.rest.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
