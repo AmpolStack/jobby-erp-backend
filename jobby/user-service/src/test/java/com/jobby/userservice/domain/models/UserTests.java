@@ -1,8 +1,9 @@
 package com.jobby.userservice.domain.models;
 
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.NullityOps;
-import com.jobby.userservice.ResultAssertions;
+import com.jobby.userservice.domain.models.entity.Contact;
+import com.jobby.userservice.domain.models.reference.IdentificationType;
+import com.jobby.userservice.domain.models.aggregate.User;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,10 +37,10 @@ public class UserTests {
 
     @Nested
     class CreateMethod{
-        @ParameterizedTest(name = "When {0} is {2}, should returns failure")
-        @DisplayName("Given required fields are null or blank, when creating a user, then it returns a validation error.")
+        @ParameterizedTest(name = "when input is {0}")
+        @DisplayName("null or blank field returns validation error")
         @MethodSource("casesOfNullity")
-        void create_WhenRequiredFieldIsNullOrBlank_ShouldReturnValidationError(
+        void givenNullOrBlankField_whenCreate_returnsValidationError(
                 String fieldName,
                 String blank,
                 String blankType,
@@ -72,8 +73,8 @@ public class UserTests {
         }
 
         @RepeatedTest(10)
-        @DisplayName("Given all field are correct, when creating a user, then it returns success")
-        void create_WhenAllFieldsAreCorrect_ShouldReturnsSuccess(){
+        @DisplayName("all correct returns success")
+        void givenAllCorrect_whenCreate_returnsSuccess(){
             // Act
             var result = User.create(VALID_ID,
                     VALID_IDENTIFICATION_TYPE_ID,
@@ -90,8 +91,8 @@ public class UserTests {
         }
 
         @RepeatedTest(10)
-        @DisplayName("Given all field are correct, when creating a user, then it returns success")
-        void create_WhenAllIsCorrect_AlwaysSetsFields(){
+        @DisplayName("all correct sets all fields")
+        void givenAllCorrect_whenCreate_setsAllFields(){
             // Act
             var result = User.create(VALID_ID,
                     VALID_IDENTIFICATION_TYPE_ID,
@@ -132,9 +133,9 @@ public class UserTests {
     @Nested
     class ReconstructMethod{
         @ParameterizedTest
-        @DisplayName("Given all field are correct, when reconstruct a user, then always sets fields")
+        @DisplayName("all correct sets all fields")
         @MethodSource("casesOfReconstruct")
-        void reconstruct_WhenAllIsCorrect_AlwaysSetsFields(
+        void givenAllCorrect_whenReconstruct_setsAllFields(
                 long id,
                 Set<Contact> contacts,
                 int identificationTypeId,
