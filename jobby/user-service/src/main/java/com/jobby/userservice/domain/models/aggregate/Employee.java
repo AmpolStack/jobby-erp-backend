@@ -1,8 +1,9 @@
-package com.jobby.userservice.domain.models;
+package com.jobby.userservice.domain.models.aggregate;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
+import com.jobby.userservice.domain.models.entity.Address;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
