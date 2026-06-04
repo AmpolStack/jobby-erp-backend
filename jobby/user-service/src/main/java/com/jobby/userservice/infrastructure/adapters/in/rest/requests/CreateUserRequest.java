@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.adapters.in.requests;
+package com.jobby.userservice.infrastructure.adapters.in.rest.requests;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
