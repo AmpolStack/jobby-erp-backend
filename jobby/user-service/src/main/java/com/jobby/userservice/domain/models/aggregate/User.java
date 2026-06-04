@@ -1,14 +1,16 @@
-package com.jobby.userservice.domain.models;
+package com.jobby.userservice.domain.models.aggregate;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.domain.enums.Role;
-import com.jobby.userservice.domain.vo.*;
+import com.jobby.userservice.domain.models.enums.Role;
+import com.jobby.userservice.domain.models.entity.Contact;
+import com.jobby.userservice.domain.models.vo.shared.*;
 import lombok.*;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -40,19 +42,10 @@ public class User {
                 .validateNotNull(email, "email address")
                 .validateNotNull(phone, "phone number")
                 .build()
-                .map(v -> new User(id,
-                        null,
-                        identificationTypeId,
-                        firstName,
-                        lastName,
-                        role,
-                        true,
-                        null,
-                        identificationNumber,
-                        email,
-                        phone,
-                        Instant.now(),
-                        Instant.now()));
+                .map(v -> new User(id, null, identificationTypeId,
+                        firstName, lastName, role,
+                        true, null, identificationNumber,
+                        email, phone, Instant.now(), Instant.now()));
     }
 
     public static User reconstruct(long id,
@@ -92,6 +85,16 @@ public class User {
                     this.profileImageUrl = imageUrl;
                     this.modifiedAt = Instant.now();
                 });
+    }
+
+    public Result<Void, Error> updateEmail(Email email){
+        if(Objects.equals(email.getEmail(), this.email.getEmail())){
+            return Result.failure(ErrorType.VALIDATION_ERROR, new Field("email", "The email address to be changed must be different from the current one."));
+        }
+
+        this.email = email;
+        this.modifiedAt = Instant.now();
+        return Result.success();
     }
 
     public Result<Void, Error> removeProfileImage(){
