@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.vo;
+package com.jobby.userservice.domain.models.vo.shared;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
