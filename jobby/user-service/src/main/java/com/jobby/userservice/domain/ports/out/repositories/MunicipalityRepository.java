@@ -1,6 +1,6 @@
-package com.jobby.userservice.domain.ports.out.repositories.models;
+package com.jobby.userservice.domain.ports.out.repositories;
 
-import com.jobby.userservice.domain.models.Municipality;
+import com.jobby.userservice.domain.models.reference.Municipality;
 
 import java.util.List;
 import java.util.Optional;
