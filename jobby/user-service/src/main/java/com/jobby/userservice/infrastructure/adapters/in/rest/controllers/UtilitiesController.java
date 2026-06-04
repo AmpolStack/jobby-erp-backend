@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.adapters.in;
+package com.jobby.userservice.infrastructure.adapters.in.rest.controllers;
 
 import com.jobby.domain.ports.IdGenerator;
 import lombok.AllArgsConstructor;
