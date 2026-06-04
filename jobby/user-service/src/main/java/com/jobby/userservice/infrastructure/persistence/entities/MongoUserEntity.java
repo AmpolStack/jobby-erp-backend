@@ -2,7 +2,7 @@ package com.jobby.userservice.infrastructure.persistence.entities;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
 import com.jobby.infrastructure.security.fields.ProtectedField;
-import com.jobby.userservice.domain.enums.Role;
+import com.jobby.userservice.domain.models.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
