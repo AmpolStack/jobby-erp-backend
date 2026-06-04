@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter;
 
+import com.jobby.ResultAssertions;
 import com.jobby.infrastructure.configurations.IdConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,26 +21,24 @@ class SnowflakeIdGeneratorTest {
         generator = new SnowflakeIdGenerator(new IdConfig(1, 1));
     }
 
-    // ─── next ───────────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("next: retorna success con un ID positivo")
-    void next_returnsSuccessWithPositiveId() {
+    @DisplayName("returns success with positive ID")
+    void givenValidConfig_whenNext_returnsSuccessWithPositiveId() {
         var result = generator.next();
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isPositive();
     }
 
     @Test
-    @DisplayName("next: 200 llamadas consecutivas producen IDs únicos")
-    void next_multipleCallsReturn_uniqueIds() {
+    @DisplayName("200 consecutive calls produce unique IDs")
+    void givenMultipleCalls_whenNext_producesUniqueIds() {
         int calls = 200;
 
         var ids = IntStream.range(0, calls)
                 .mapToLong(i -> {
                     var r = generator.next();
-                    assertThat(r.isSuccess()).isTrue();
+                    ResultAssertions.assertSuccess(r);
                     return r.data();
                 })
                 .boxed()
@@ -49,8 +48,8 @@ class SnowflakeIdGeneratorTest {
     }
 
     @Test
-    @DisplayName("next: IDs son estrictamente crecientes (orden temporal)")
-    void next_idsAreStrictlyIncreasing() {
+    @DisplayName("IDs are strictly increasing")
+    void givenSequentialCalls_whenNext_idsAreStrictlyIncreasing() {
         long id1 = generator.next().data();
         long id2 = generator.next().data();
 
@@ -58,11 +57,10 @@ class SnowflakeIdGeneratorTest {
     }
 
     @Test
-    @DisplayName("next: generadores con distinto workerId/datacenterId producen IDs distintos")
-    void next_differentWorkerAndDatacenter_produceDifferentIds() {
+    @DisplayName("different worker/datacenter produce different IDs")
+    void givenDifferentWorkerAndDatacenter_whenNext_producesDifferentIds() {
         var generator2 = new SnowflakeIdGenerator(new IdConfig(2, 2));
 
-        // Generar un lote de IDs de cada generador y verificar que no se solapan
         var idsFromGen1 = new HashSet<Long>();
         var idsFromGen2 = new HashSet<Long>();
 
@@ -71,7 +69,6 @@ class SnowflakeIdGeneratorTest {
             idsFromGen2.add(generator2.next().data());
         }
 
-        // Los conjuntos no deben tener intersección (diferentes bits de worker)
         assertThat(idsFromGen1).doesNotContainAnyElementsOf(idsFromGen2);
     }
 }
