@@ -2,6 +2,7 @@ package com.jobby.userservice.infrastructure.persistence.entities;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
 import com.jobby.infrastructure.security.fields.ProtectedField;
+import com.jobby.userservice.domain.models.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,12 @@ public class MongoUserEntity {
     @Field("_id")
     private Long id;
 
+    @Field("organization_id")
+    private Long organizationId;
+
+    @Field("sectional_id")
+    private Long sectionalId;
+
     @Field("contacts")
     private Set<@NotNull MongoContactEntity> contacts;
 
@@ -38,7 +45,7 @@ public class MongoUserEntity {
     @Field("role")
     @NotBlank
     @Size(max = 10, message = "It cannot have more than 10 characters")
-    private String role;
+    private Role role;
 
     @Field("is_active")
     private boolean isActive;

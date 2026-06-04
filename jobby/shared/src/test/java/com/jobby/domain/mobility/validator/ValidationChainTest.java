@@ -1,5 +1,6 @@
 package com.jobby.domain.mobility.validator;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
@@ -7,90 +8,92 @@ import com.jobby.domain.mobility.result.Result;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ValidationChainTest {
 
     // ── Core chain behavior ──────────────────────────────────────────
-
     @Nested
     @DisplayName("Chain creation and build")
     class CoreBehavior {
 
         @Test
-        @DisplayName("empty chain builds to success")
-        void emptyChainBuildsToSuccess() {
+        @DisplayName("empty chain returns success")
+        void givenEmptyChain_whenBuild_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create().build();
-
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("chain with all passing validations builds to success")
-        void allPassingValidationsReturnSuccess() {
+        @DisplayName("all passing returns success")
+        void givenAllPassing_whenBuild_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotNull("value", "field")
                     .validateNotBlank("hello", "field")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("short-circuits on first failure (lazy supplier)")
-        void shortCircuitsOnFirstFailure() {
+        @DisplayName("short-circuits on first failure")
+        void givenFirstFails_whenBuild_shortCircuits() {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("a", "first error"));
+
             Result<Void, Error> result = ValidationChain.create()
-                    .add(() -> Result.failure(ErrorType.VALIDATION_ERROR,
-                            new Field("a", "first error")))
+                    .add(() -> expectedResult)
                     .add(() -> Result.failure(ErrorType.VALIDATION_ERROR,
                             new Field("b", "second error")))
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getInstance()).isEqualTo("a");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
 
         @Test
-        @DisplayName("accepts eager Result values via add(Result)")
-        void acceptsEagerResultValues() {
+        @DisplayName("accepts eager Result values")
+        void givenEagerResult_whenBuild_returnsSuccess() {
             Result<?, Error> eager = Result.success(null);
 
             Result<Void, Error> result = ValidationChain.create()
                     .add(eager)
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result, null);
         }
     }
 
     // ── Null / Blank validations ─────────────────────────────────────
-
     @Nested
     @DisplayName("validateNotNull()")
     class NotNull {
 
         @Test
-        @DisplayName("passes when value is not null")
-        void passesNotNull() {
+        @DisplayName("passes not null")
+        void givenNotNull_whenValidateNotNull_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotNull("something", "field")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("fails when value is null")
-        void failsOnNull() {
+        @DisplayName("fails on null")
+        void givenNull_whenValidateNotNull_returnsFailure() {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("myField", "myField is null"));
+
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotNull(null, "myField")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getCode()).isEqualTo(ErrorType.VALIDATION_ERROR);
-            assertThat(result.error().getFields()[0].getInstance()).isEqualTo("myField");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
+
     }
 
     @Nested
@@ -98,172 +101,175 @@ class ValidationChainTest {
     class NotBlank {
 
         @Test
-        @DisplayName("passes with non-blank string")
-        void passesNonBlank() {
+        @DisplayName("passes non-blank")
+        void givenNonBlank_whenValidateNotBlank_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotBlank("text", "name")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
-        @Test
-        @DisplayName("fails when string is null")
-        void failsOnNull() {
+        @ParameterizedTest(name = "when input is {1}")
+        @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithoutNull")
+        @DisplayName("fails on blank")
+        void givenBlank_whenValidateNotBlank_returnsFailure(String blank, String blankTypeName) {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("name", "name is blank"));
+
             Result<Void, Error> result = ValidationChain.create()
-                    .validateNotBlank(null, "name")
+                    .validateNotBlank(blank, "name")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getReason()).contains("is null");
-        }
-
-        @Test
-        @DisplayName("fails when string is blank")
-        void failsOnBlank() {
-            Result<Void, Error> result = ValidationChain.create()
-                    .validateNotBlank("   ", "name")
-                    .build();
-
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getReason()).contains("is blank");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
     }
 
     // ── Email validation ─────────────────────────────────────────────
-
     @Nested
     @DisplayName("validateEmail()")
     class Email {
-
-        @Test
-        @DisplayName("passes with valid email")
-        void passesWithValidEmail() {
+        @ParameterizedTest(name = "when input is {0}")
+        @MethodSource("com.jobby.boundaries.EmailBoundaries#validCases")
+        @DisplayName("passes valid email")
+        void givenValidEmail_whenValidateEmail_returnsSuccess(String email) {
             Result<Void, Error> result = ValidationChain.create()
-                    .validateEmail("user@example.com", "email")
+                    .validateEmail(email, "email")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("fails when email is null")
-        void failsOnNull() {
+        @DisplayName("fails on null")
+        void givenNullEmail_whenValidateEmail_returnsFailure() {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("email", "email is null"));
+
             Result<Void, Error> result = ValidationChain.create()
                     .validateEmail(null, "email")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getReason()).contains("is null");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
 
-        @Test
-        @DisplayName("fails when email is blank")
-        void failsOnBlank() {
+        @ParameterizedTest(name = "when input is {1}")
+        @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithoutNull")
+        @DisplayName("fails on blank")
+        void givenBlankEmail_whenValidateEmail_returnsFailure(String blank ,String blankTypeName) {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("email", "email is blank"));
+
             Result<Void, Error> result = ValidationChain.create()
-                    .validateEmail("  ", "email")
+                    .validateEmail(blank, "email")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getReason()).contains("is blank");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
 
-        @Test
-        @DisplayName("fails when email format is invalid")
-        void failsInvalidFormat() {
+        @ParameterizedTest(name = "when input is {0}")
+        @MethodSource("com.jobby.boundaries.EmailBoundaries#invalidFormatCases")
+        @DisplayName("fails on invalid format")
+        void givenInvalidEmail_whenValidateEmail_returnsFailure(String email) {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("email","email must be a valid email"));
+
             Result<Void, Error> result = ValidationChain.create()
-                    .validateEmail("not-an-email", "email")
+                    .validateEmail(email, "email")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getFields()[0].getReason()).contains("valid email");
+            ResultAssertions.assertFailure(result, expectedResult);
         }
     }
 
     // ── Numeric comparisons ──────────────────────────────────────────
-
     @Nested
     @DisplayName("Numeric comparison validations")
     class NumericComparisons {
 
-        @Test
-        @DisplayName("validateGreaterThan passes when value >= threshold")
-        void greaterThanPasses() {
+        @ParameterizedTest(name = "when numbers are {0},{1}")
+        @CsvSource({"1,0", "2,1", "1000, 999", "10, 5", "50001, 50000", "-1, -2"})
+        @DisplayName("passes when value > threshold")
+        void givenGreater_whenValidateGreaterThan_returnsSuccess(int a, int b) {
             Result<Void, Error> result = ValidationChain.create()
-                    .validateGreaterThan(10, 5, "age")
+                    .validateGreaterThan(a, b, "age")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
+        }
+
+        @ParameterizedTest(name = "when numbers are {0},{1}")
+        @CsvSource({"0,1", "1,2", "999,1000", "5,10", "50000, 50001", "1,1", "50,50", "-2, -1"})
+        @DisplayName("fails when value <= threshold")
+        void givenLessOrEqual_whenValidateGreaterThan_returnsFailure(int a, int b) {
+            var expectedResult = Result.failure(ErrorType.VALIDATION_ERROR,
+                    new Field("age", "age is less or equals than "+ b));
+
+            Result<Void, Error> result = ValidationChain.create()
+                    .validateGreaterThan(a, b, "age")
+                    .build();
+
+            ResultAssertions.assertFailure(result, expectedResult);
         }
 
         @Test
-        @DisplayName("validateGreaterThan fails when value < threshold")
-        void greaterThanFails() {
-            Result<Void, Error> result = ValidationChain.create()
-                    .validateGreaterThan(3, 5, "age")
-                    .build();
-
-            assertThat(result.isFailure()).isTrue();
-        }
-
-        @Test
-        @DisplayName("validateSmallerThan passes when value <= threshold")
-        void smallerThanPasses() {
+        @DisplayName("passes when value < threshold")
+        void givenSmaller_whenValidateSmallerThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateSmallerThan(3, 5, "qty")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateSmallerThan fails when value > threshold")
-        void smallerThanFails() {
+        @DisplayName("fails when value >= threshold")
+        void givenGreater_whenValidateSmallerThan_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateSmallerThan(10, 5, "qty")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
         }
 
         @Test
-        @DisplayName("validateGreaterOrEqualsThan passes when value > threshold")
-        void greaterOrEqualsPasses() {
+        @DisplayName("passes when value >= threshold")
+        void givenGreater_whenValidateGreaterOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateGreaterOrEqualsThan(6, 5, "score")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateGreaterOrEqualsThan fails when value <= threshold")
-        void greaterOrEqualsFails() {
+        @DisplayName("passes when value == threshold")
+        void givenEqual_whenValidateGreaterOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateGreaterOrEqualsThan(5, 5, "score")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateSmallerOrEqualsThan passes when value < threshold")
-        void smallerOrEqualsPasses() {
+        @DisplayName("passes when value < threshold")
+        void givenSmaller_whenValidateSmallerOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateSmallerOrEqualsThan(4, 5, "level")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateSmallerOrEqualsThan fails when value >= threshold")
-        void smallerOrEqualsFails() {
+        @DisplayName("passes when value == threshold")
+        void givenEqual_whenValidateSmallerOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateSmallerOrEqualsThan(5, 5, "level")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
     }
 
@@ -274,112 +280,110 @@ class ValidationChainTest {
     class InternalValidations {
 
         @Test
-        @DisplayName("validateInternalNotNull fails with ITN_VALIDATION_NULL")
-        void internalNotNullFails() {
+        @DisplayName("fails with ITN_VALIDATION_NULL")
+        void givenNull_whenValidateInternalNotNull_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalNotNull(null, "field")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_NULL);
         }
 
         @Test
-        @DisplayName("validateInternalNotBlank fails with ITN_VALIDATION_BLANK for blank")
-        void internalNotBlankFails() {
+        @DisplayName("fails with ITN_VALIDATION_BLANK")
+        void givenBlank_whenValidateInternalNotBlank_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalNotBlank("  ", "field")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_BLANK);
         }
 
         @Test
-        @DisplayName("validateInternalNotBlank fails with ITN_VALIDATION_NULL for null")
-        void internalNotBlankNullFails() {
+        @DisplayName("fails with ITN_VALIDATION_NULL")
+        void givenNull_whenValidateInternalNotBlank_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalNotBlank(null, "field")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_NULL);
         }
 
         @Test
-        @DisplayName("validateInternalEmail passes with valid email")
-        void internalEmailPasses() {
+        @DisplayName("passes valid email")
+        void givenValidEmail_whenValidateInternalEmail_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalEmail("admin@test.co", "email")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateInternalEmail fails with ITN_VALIDATION_FORMAT")
-        void internalEmailInvalidFormat() {
+        @DisplayName("fails with ITN_VALIDATION_FORMAT")
+        void givenInvalidEmail_whenValidateInternalEmail_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalEmail("invalid", "email")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_FORMAT);
         }
 
         @Test
-        @DisplayName("validateInternalGreaterThan (int) fails with ITN_VALIDATION_RANGE")
-        void internalGreaterThanIntFails() {
+        @DisplayName("fails with ITN_VALIDATION_RANGE (int)")
+        void givenLess_whenValidateInternalGreaterThanInt_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalGreaterThan(1, 5, "qty")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_RANGE);
         }
 
         @Test
-        @DisplayName("validateInternalGreaterThan (long) fails with ITN_VALIDATION_RANGE")
-        void internalGreaterThanLongFails() {
+        @DisplayName("fails with ITN_VALIDATION_RANGE (long)")
+        void givenLess_whenValidateInternalGreaterThanLong_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalGreaterThan(1L, 5L, "id")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_RANGE);
         }
 
         @Test
-        @DisplayName("validateInternalSmallerThan fails with ITN_VALIDATION_RANGE")
-        void internalSmallerThanFails() {
+        @DisplayName("fails with ITN_VALIDATION_RANGE")
+        void givenGreater_whenValidateInternalSmallerThan_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalSmallerThan(10, 5, "max")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_RANGE);
         }
 
         @Test
-        @DisplayName("validateInternalGreaterOrEqualsThan fails with ITN_VALIDATION_RANGE")
-        void internalGreaterOrEqualsFails() {
+        @DisplayName("passes when value == threshold")
+        void givenEqual_whenValidateInternalGreaterOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalGreaterOrEqualsThan(5, 5, "val")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_RANGE);
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateInternalSmallerOrEqualsThan fails with ITN_VALIDATION_RANGE")
-        void internalSmallerOrEqualsFails() {
+        @DisplayName("passes when value == threshold")
+        void givenEqual_whenValidateInternalSmallerOrEqualsThan_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalSmallerOrEqualsThan(5, 5, "val")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_RANGE);
+            ResultAssertions.assertSuccess(result);
         }
     }
 
@@ -390,23 +394,23 @@ class ValidationChainTest {
     class AnyMatch {
 
         @Test
-        @DisplayName("passes when value matches one of the options")
-        void passesOnMatch() {
+        @DisplayName("passes on match")
+        void givenMatching_whenValidateInternalAnyMatch_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalAnyMatch("B", new String[] { "A", "B", "C" }, "option")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("fails when value matches none of the options")
-        void failsOnNoMatch() {
+        @DisplayName("fails on no match")
+        void givenNonMatching_whenValidateInternalAnyMatch_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalAnyMatch("Z", new String[] { "A", "B", "C" }, "option")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
         }
     }
@@ -418,35 +422,35 @@ class ValidationChainTest {
     class CustomValidations {
 
         @Test
-        @DisplayName("validateCustom passes when condition is true")
-        void customPasses() {
+        @DisplayName("passes when true")
+        void givenTrue_whenValidateCustom_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateCustom(true, "field", "must be true")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("validateCustom fails when condition is false")
-        void customFails() {
+        @DisplayName("fails when false")
+        void givenFalse_whenValidateCustom_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateCustom(false, "field", "custom msg")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.VALIDATION_ERROR);
             assertThat(result.error().getFields()[0].getReason()).isEqualTo("custom msg");
         }
 
         @Test
-        @DisplayName("validateInternalCustom fails with ITN_VALIDATION_CUSTOM")
-        void internalCustomFails() {
+        @DisplayName("fails with ITN_VALIDATION_CUSTOM")
+        void givenFalse_whenValidateInternalCustom_returnsFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateInternalCustom(false, "field", "bad state")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_CUSTOM);
             assertThat(result.error().getFields()[0].getReason())
                     .contains("Internal validation failed");
@@ -460,25 +464,25 @@ class ValidationChainTest {
     class ConditionalValidation {
 
         @Test
-        @DisplayName("executes validation when condition is true")
-        void executesWhenTrue() {
+        @DisplayName("executes when true")
+        void givenTrue_whenValidateIf_executesValidation() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateIf(true, () -> Result.failure(
                             ErrorType.VALIDATION_ERROR, new Field("f", "triggered")))
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
         }
 
         @Test
-        @DisplayName("skips validation when condition is false")
-        void skipsWhenFalse() {
+        @DisplayName("skips when false")
+        void givenFalse_whenValidateIf_skipsValidation() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateIf(false, () -> Result.failure(
                             ErrorType.VALIDATION_ERROR, new Field("f", "triggered")))
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
     }
 
@@ -489,8 +493,8 @@ class ValidationChainTest {
     class FullChainScenarios {
 
         @Test
-        @DisplayName("multiple validations all pass")
-        void multipleValidationsAllPass() {
+        @DisplayName("all valid pass")
+        void givenAllValid_whenChained_returnsSuccess() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotNull("John", "firstName")
                     .validateNotBlank("john@test.com", "email")
@@ -498,19 +502,19 @@ class ValidationChainTest {
                     .validateGreaterThan(25, 18, "age")
                     .build();
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("chain stops at first validation failure")
-        void chainStopsAtFirstFailure() {
+        @DisplayName("stops at first failure")
+        void givenFirstFails_whenChained_stopsAtFirstFailure() {
             Result<Void, Error> result = ValidationChain.create()
                     .validateNotNull("John", "firstName")
                     .validateNotBlank("", "lastName")
                     .validateEmail("invalid", "email")
                     .build();
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getFields()[0].getInstance()).isEqualTo("lastName");
         }
     }

@@ -1,9 +1,11 @@
 package com.jobby.infrastructure.adapter.hashing;
 
+import com.jobby.ResultAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("BcryptHashingService - Unit Tests")
@@ -16,95 +18,82 @@ class BcryptHashingServiceTest {
         service = new BcryptHashingService();
     }
 
-    // ─── hash: entradas inválidas ────────────────────────────────────────────
+    @ParameterizedTest(name = "When input is {1}")
+    @DisplayName("hash: null or blank returns failure")
+    @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithLabels")
+    void givenNullOrBlankInput_whenHash_returnsFailure(String input, String nullityType) {
+        var result = service.hash(input);
 
-    @Test
-    @DisplayName("hash: null retorna failure")
-    void hash_nullInput_returnsFailure() {
-        var result = service.hash(null);
-
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("hash: cadena en blanco retorna failure")
-    void hash_blankInput_returnsFailure() {
-        var result = service.hash("   ");
-
-        assertThat(result.isFailure()).isTrue();
-    }
-
-    @Test
-    @DisplayName("hash: entrada que supera 72 bytes (límite BCrypt) retorna failure")
-    void hash_inputExceeding72Bytes_returnsFailure() {
-        String longInput = "a".repeat(100); // 100 bytes UTF-8
+    @DisplayName("input exceeding 72 bytes returns failure")
+    void givenInputExceeds72Bytes_whenHash_returnsFailure() {
+        String longInput = "a".repeat(100);
 
         var result = service.hash(longInput);
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
-    // ─── hash: entrada válida ────────────────────────────────────────────────
-
     @Test
-    @DisplayName("hash: entrada válida retorna hash BCrypt con prefijo $2a$")
-    void hash_validInput_returnsBcryptHashWithPrefix() {
+    @DisplayName("valid input returns Bcrypt hash with $2a$ prefix")
+    void givenValidInput_whenHash_returnsBcryptHashWithPrefix() {
         var result = service.hash("securePassword123");
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).startsWith("$2a$");
     }
 
     @Test
-    @DisplayName("hash: misma entrada produce hashes distintos (salt aleatorio)")
-    void hash_sameInputTwice_producesDifferentHashes() {
+    @DisplayName("same input twice produces different hashes")
+    void givenSameInputTwice_whenHash_returnsDifferentHashes() {
         var hash1 = service.hash("password");
         var hash2 = service.hash("password");
 
-        assertThat(hash1.isSuccess()).isTrue();
-        assertThat(hash2.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(hash1);
+        ResultAssertions.assertSuccess(hash2);
         assertThat(hash1.data()).isNotEqualTo(hash2.data());
     }
 
-    // ─── matches ────────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("matches: plain correcto y su hash retorna true")
-    void matches_correctPlainAndHash_returnsTrue() {
+    @DisplayName("matching plain returns true")
+    void givenMatchingPlain_whenMatches_returnsTrue() {
         var hashResult = service.hash("correctPassword");
-        assertThat(hashResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(hashResult);
 
         var result = service.matches("correctPassword", hashResult.data());
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isTrue();
     }
 
     @Test
-    @DisplayName("matches: plain incorrecto retorna false")
-    void matches_wrongPlain_returnsFalse() {
+    @DisplayName("non-matching plain returns false")
+    void givenNonMatchingPlain_whenMatches_returnsFalse() {
         var hashResult = service.hash("correctPassword");
-        assertThat(hashResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(hashResult);
 
         var result = service.matches("wrongPassword", hashResult.data());
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isFalse();
     }
 
     @Test
-    @DisplayName("matches: plain null retorna failure")
-    void matches_nullPlain_returnsFailure() {
+    @DisplayName("null plain returns failure")
+    void givenNullPlain_whenMatches_returnsFailure() {
         var result = service.matches(null, "$2a$10$someValidHashHere");
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("matches: hash en blanco retorna failure")
-    void matches_blankHash_returnsFailure() {
+    @DisplayName("blank hash returns failure")
+    void givenBlankHash_whenMatches_returnsFailure() {
         var result = service.matches("password", "   ");
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 }

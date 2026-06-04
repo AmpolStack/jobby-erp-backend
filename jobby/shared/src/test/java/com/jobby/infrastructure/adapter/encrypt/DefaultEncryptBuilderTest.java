@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter.encrypt;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -7,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DefaultEncryptBuilderTest {
 
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
-    private static final byte[] KEY_BYTES_128 = new byte[16]; // clave AES 128 bits (ceros)
+    private static final byte[] KEY_BYTES_128 = new byte[16];
 
     private SecretKeySpec validKey;
 
@@ -23,11 +26,9 @@ class DefaultEncryptBuilderTest {
         validKey = new SecretKeySpec(KEY_BYTES_128, "AES");
     }
 
-    // ─── build: camino feliz ─────────────────────────────────────────────────
-
     @Test
-    @DisplayName("build: configuración AES/GCM válida encripta y retorna bytes con éxito")
-    void build_validEncryptConfig_returnsCipherBytes() {
+    @DisplayName("valid config returns cipher bytes")
+    void givenValidConfig_whenBuild_returnsCipherBytes() {
         var iv = EncryptionCryptography.generateIv(12, 128);
         byte[] plainData = "hello world".getBytes();
 
@@ -39,14 +40,14 @@ class DefaultEncryptBuilderTest {
                 .setTransformation(TRANSFORMATION)
                 .build();
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isNotEmpty();
-        assertThat(result.data()).isNotEqualTo(plainData); // ciphertext ≠ plaintext
+        assertThat(result.data()).isNotEqualTo(plainData);
     }
 
     @Test
-    @DisplayName("build: roundtrip encrypt → decrypt recupera el plaintext original")
-    void build_encryptDecryptRoundtrip_recoversOriginalData() {
+    @DisplayName("roundtrip recovers original data")
+    void givenEncryptDecryptRoundtrip_whenBuild_returnsOriginalData() {
         byte[] plainData = "secure message 123".getBytes();
         var iv = EncryptionCryptography.generateIv(12, 128);
 
@@ -57,7 +58,7 @@ class DefaultEncryptBuilderTest {
                 .setMode(Cipher.ENCRYPT_MODE)
                 .setTransformation(TRANSFORMATION)
                 .build();
-        assertThat(encryptResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(encryptResult);
 
         var decryptResult = new DefaultEncryptBuilder()
                 .setData(encryptResult.data())
@@ -67,15 +68,13 @@ class DefaultEncryptBuilderTest {
                 .setTransformation(TRANSFORMATION)
                 .build();
 
-        assertThat(decryptResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(decryptResult);
         assertThat(decryptResult.data()).isEqualTo(plainData);
     }
 
-    // ─── build: caminos de error ─────────────────────────────────────────────
-
     @Test
-    @DisplayName("build: transformación inválida retorna INVALID_OPTION_PARAMETER")
-    void build_invalidTransformation_returnsInvalidOptionParameter() {
+    @DisplayName("invalid transformation returns invalid option")
+    void givenInvalidTransformation_whenBuild_returnsInvalidOptionParameter() {
         var iv = EncryptionCryptography.generateIv(12, 128);
 
         var result = new DefaultEncryptBuilder()
@@ -86,14 +85,12 @@ class DefaultEncryptBuilderTest {
                 .setTransformation("INVALID/UNKNOWN/NoPadding")
                 .build();
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_INVALID_OPTION_PARAMETER);
     }
 
     @Test
-    @DisplayName("build: clave de tamaño inválido para AES retorna ITS_OPERATION_ERROR")
-    void build_invalidKeySizeForAES_returnsOperationError() {
-        // 15 bytes (120 bits) no es un tamaño válido para AES en modo JCE
+    @DisplayName("invalid key size returns operation error")
+    void givenInvalidKeySize_whenBuild_returnsOperationError() {
         var invalidKey = new SecretKeySpec(new byte[15], "AES");
         var iv = EncryptionCryptography.generateIv(12, 128);
 
@@ -105,15 +102,14 @@ class DefaultEncryptBuilderTest {
                 .setTransformation(TRANSFORMATION)
                 .build();
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_OPERATION_ERROR);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_OPERATION_ERROR);
     }
 
     @Test
-    @DisplayName("build: datos de cipher corruptos en modo DECRYPT retorna ITS_OPERATION_ERROR")
-    void build_corruptedCiphertextInDecryptMode_returnsOperationError() {
+    @DisplayName("corrupted ciphertext returns operation error")
+    void givenCorruptedCiphertext_whenBuild_returnsOperationError() {
         var iv = EncryptionCryptography.generateIv(12, 128);
-        byte[] garbage = new byte[50]; // datos aleatorios, no cifrado válido
+        byte[] garbage = new byte[50];
 
         var result = new DefaultEncryptBuilder()
                 .setData(garbage)
@@ -123,7 +119,20 @@ class DefaultEncryptBuilderTest {
                 .setTransformation(TRANSFORMATION)
                 .build();
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_OPERATION_ERROR);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_OPERATION_ERROR);
+    }
+
+    @Test
+    @DisplayName("incompatible key type returns operation error")
+    void givenIncompatibleKeyType_whenBuild_returnsOperationError() throws NoSuchAlgorithmException {
+        var rsaPublicKey = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
+
+        var result = new DefaultEncryptBuilder()
+                .setData("data".getBytes())
+                .setKey(rsaPublicKey)
+                .setTransformation(TRANSFORMATION)
+                .build();
+
+        ResultAssertions.assertFailure(result, ErrorType.ITS_OPERATION_ERROR);
     }
 }

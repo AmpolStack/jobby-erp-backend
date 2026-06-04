@@ -1,19 +1,24 @@
 package com.jobby.infrastructure.adapter.hashing.mac;
 
+import com.jobby.boundaries.NullityBoundaries;
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.infrastructure.configurations.MacConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Base64;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("HmacSha256Service - Unit Tests")
 class HmacSha256ServiceTest {
 
-    // Clave de 256 bits válida para HmacSHA256
     private static final String VALID_KEY_B64 = Base64.getEncoder().encodeToString(new byte[32]);
     private static final int HMAC_SHA256_OUTPUT_BYTES = 32;
 
@@ -25,106 +30,91 @@ class HmacSha256ServiceTest {
         service = new HmacSha256Service(new DefaultMacBuilder(), config);
     }
 
-    // ─── generateMac: entradas vacías / nulas ────────────────────────────────
+    @ParameterizedTest(name = "When data is {1}")
+    @DisplayName("null or blank returns empty success")
+    @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithLabels")
+    void givenNullOrBlankData_whenGenerateMac_returnsEmptySuccess(String data, String nullityType) {
+        var result = service.generateMac(data);
 
-    @Test
-    @DisplayName("generateMac: null retorna success con array vacío")
-    void generateMac_nullData_returnsEmptySuccess() {
-        var result = service.generateMac(null);
-
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isEmpty();
     }
 
     @Test
-    @DisplayName("generateMac: cadena en blanco retorna success con array vacío")
-    void generateMac_blankData_returnsEmptySuccess() {
-        var result = service.generateMac("   ");
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.data()).isEmpty();
-    }
-
-    // ─── generateMac: datos válidos ─────────────────────────────────────────
-
-    @Test
-    @DisplayName("generateMac: datos válidos retorna 32 bytes de HMAC-SHA256")
-    void generateMac_validData_returns32ByteMac() {
+    @DisplayName("valid data returns 32-byte MAC")
+    void givenValidData_whenGenerateMac_returns32ByteMac() {
         var result = service.generateMac("hello world");
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).hasSize(HMAC_SHA256_OUTPUT_BYTES);
     }
 
     @Test
-    @DisplayName("generateMac: misma entrada produce el mismo HMAC (determinismo)")
-    void generateMac_sameData_producesDeterministicMac() {
+    @DisplayName("same data produces deterministic MAC")
+    void givenSameData_whenGenerateMac_returnsDeterministicMac() {
         var mac1 = service.generateMac("deterministic data");
         var mac2 = service.generateMac("deterministic data");
 
-        assertThat(mac1.isSuccess()).isTrue();
-        assertThat(mac2.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(mac1);
+        ResultAssertions.assertSuccess(mac2);
         assertThat(mac1.data()).isEqualTo(mac2.data());
     }
 
     @Test
-    @DisplayName("generateMac: entradas distintas producen HMACs distintos")
-    void generateMac_differentData_producesDifferentMacs() {
+    @DisplayName("different data produces different MACs")
+    void givenDifferentData_whenGenerateMac_returnsDifferentMacs() {
         var mac1 = service.generateMac("data A");
         var mac2 = service.generateMac("data B");
 
+        ResultAssertions.assertSuccess(mac1);
+        ResultAssertions.assertSuccess(mac2);
         assertThat(mac1.data()).isNotEqualTo(mac2.data());
     }
 
-    // ─── generateMac: configuración inválida ────────────────────────────────
-
     @Test
-    @DisplayName("generateMac: clave en formato Base64 inválido retorna ITS_SERIALIZATION_ERROR")
-    void generateMac_invalidBase64Key_returnsSerializationError() {
+    @DisplayName("invalid Base64 key returns serialization error")
+    void givenInvalidKeyBase64_whenGenerateMac_returnsSerializationError() {
         var badConfig = new MacConfig("not::valid@@base64!!!!", "HmacSHA256");
         var badService = new HmacSha256Service(new DefaultMacBuilder(), badConfig);
 
         var result = badService.generateMac("test data");
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_SERIALIZATION_ERROR);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_SERIALIZATION_ERROR);
     }
 
     @Test
-    @DisplayName("generateMac: algoritmo inválido en config retorna failure")
-    void generateMac_invalidAlgorithmConfig_returnsFailure() {
-        var badConfig = new MacConfig(VALID_KEY_B64, "MD5"); // no está en VALID_ALGORITHMS
+    @DisplayName("invalid algorithm returns failure")
+    void givenInvalidAlgorithm_whenGenerateMac_returnsFailure() {
+        var badConfig = new MacConfig(VALID_KEY_B64, "MD5");
         var badService = new HmacSha256Service(new DefaultMacBuilder(), badConfig);
 
         var result = badService.generateMac("test data");
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
-    // ─── verifyMac ───────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("verifyMac: datos correctos y su HMAC retorna true")
-    void verifyMac_correctData_returnsTrue() {
+    @DisplayName("matching data returns true")
+    void givenMatchingData_whenVerifyMac_returnsTrue() {
         String data = "verify me";
         var macResult = service.generateMac(data);
-        assertThat(macResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(macResult);
 
         var result = service.verifyMac(data, macResult.data());
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isTrue();
     }
 
     @Test
-    @DisplayName("verifyMac: datos alterados no coinciden con el HMAC original, retorna false")
-    void verifyMac_tamperedData_returnsFalse() {
+    @DisplayName("tampered data returns false")
+    void givenTamperedData_whenVerifyMac_returnsFalse() {
         var macResult = service.generateMac("original data");
-        assertThat(macResult.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(macResult);
 
         var result = service.verifyMac("tampered data", macResult.data());
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).isFalse();
     }
 }

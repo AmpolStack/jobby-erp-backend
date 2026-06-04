@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter.hashing.mac;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.infrastructure.configurations.MacConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -13,13 +14,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("MacCryptography - Unit Tests")
 class MacCryptographyTest {
 
-    private static final String VALID_KEY_B64 = Base64.getEncoder().encodeToString(new byte[32]); // 256 bits
-
-    // ─── Utilidad: no instanciable ───────────────────────────────────────────
+    private static final String VALID_KEY_B64 = Base64.getEncoder().encodeToString(new byte[32]);
 
     @Test
-    @DisplayName("constructor: lanza UnsupportedOperationException al intentar instanciar")
-    void constructor_throwsUnsupportedOperationException() {
+    @DisplayName("throws UnsupportedOperationException when instantiated")
+    void givenInstantiated_whenConstructor_throwsUnsupportedOperationException() {
         assertThatThrownBy(() -> {
             var ctor = MacCryptography.class.getDeclaredConstructor();
             ctor.setAccessible(true);
@@ -27,86 +26,81 @@ class MacCryptographyTest {
         }).hasCauseInstanceOf(UnsupportedOperationException.class);
     }
 
-    // ─── validateConfig ──────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("validateConfig: config nula retorna ITS_INVALID_OPTION_PARAMETER")
-    void validateConfig_nullConfig_returnsInvalidOptionParameter() {
+    @DisplayName("null config returns invalid option")
+    void givenNullConfig_whenValidateConfig_returnsInvalidOptionParameter() {
         var result = MacCryptography.validateConfig(null);
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_INVALID_OPTION_PARAMETER);
     }
 
     @Test
-    @DisplayName("validateConfig: secretKey en blanco retorna failure")
-    void validateConfig_blankSecretKey_returnsFailure() {
+    @DisplayName("blank secretKey returns failure")
+    void givenBlankSecretKey_whenValidateConfig_returnsFailure() {
         var config = new MacConfig("   ", "HmacSHA256");
 
         var result = MacCryptography.validateConfig(config);
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("validateConfig: algoritmo inválido retorna failure")
-    void validateConfig_invalidAlgorithm_returnsFailure() {
+    @DisplayName("invalid algorithm returns failure")
+    void givenInvalidAlgorithm_whenValidateConfig_returnsFailure() {
         var config = new MacConfig(VALID_KEY_B64, "MD5");
 
         var result = MacCryptography.validateConfig(config);
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("validateConfig: HmacSHA256 con key válida retorna success")
-    void validateConfig_validHmacSha256Config_returnsSuccess() {
+    @DisplayName("HmacSHA256 with valid key returns success")
+    void givenHmacSha256AndValidKey_whenValidateConfig_returnsSuccess() {
         var config = new MacConfig(VALID_KEY_B64, "HmacSHA256");
 
         var result = MacCryptography.validateConfig(config);
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
     }
 
     @Test
-    @DisplayName("validateConfig: HmacSHA512 con key válida retorna success")
-    void validateConfig_validHmacSha512Config_returnsSuccess() {
+    @DisplayName("HmacSHA512 with valid key returns success")
+    void givenHmacSha512AndValidKey_whenValidateConfig_returnsSuccess() {
         var config = new MacConfig(VALID_KEY_B64, "HmacSHA512");
 
         var result = MacCryptography.validateConfig(config);
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
     }
 
-    // ─── isValidAlgorithm ───────────────────────────────────────────────────
-
     @Test
-    @DisplayName("isValidAlgorithm: HmacSHA256 retorna true")
-    void isValidAlgorithm_hmacSha256_returnsTrue() {
+    @DisplayName("HmacSHA256 returns true")
+    void givenHmacSha256_whenIsValidAlgorithm_returnsTrue() {
         assertThat(MacCryptography.isValidAlgorithm("HmacSHA256")).isTrue();
     }
 
     @Test
-    @DisplayName("isValidAlgorithm: HmacSHA1 retorna true")
-    void isValidAlgorithm_hmacSha1_returnsTrue() {
+    @DisplayName("HmacSHA1 returns true")
+    void givenHmacSha1_whenIsValidAlgorithm_returnsTrue() {
         assertThat(MacCryptography.isValidAlgorithm("HmacSHA1")).isTrue();
     }
 
     @Test
-    @DisplayName("isValidAlgorithm: HmacSHA512 retorna true")
-    void isValidAlgorithm_hmacSha512_returnsTrue() {
+    @DisplayName("HmacSHA512 returns true")
+    void givenHmacSha512_whenIsValidAlgorithm_returnsTrue() {
         assertThat(MacCryptography.isValidAlgorithm("HmacSHA512")).isTrue();
     }
 
     @Test
-    @DisplayName("isValidAlgorithm: MD5 retorna false")
-    void isValidAlgorithm_md5_returnsFalse() {
+    @DisplayName("MD5 returns false")
+    void givenMd5_whenIsValidAlgorithm_returnsFalse() {
         assertThat(MacCryptography.isValidAlgorithm("MD5")).isFalse();
     }
 
     @Test
-    @DisplayName("isValidAlgorithm: cadena vacía retorna false")
-    void isValidAlgorithm_emptyString_returnsFalse() {
+    @DisplayName("empty string returns false")
+    void givenEmptyString_whenIsValidAlgorithm_returnsFalse() {
         assertThat(MacCryptography.isValidAlgorithm("")).isFalse();
     }
 }

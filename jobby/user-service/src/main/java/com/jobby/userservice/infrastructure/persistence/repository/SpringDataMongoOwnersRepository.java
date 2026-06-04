@@ -4,6 +4,9 @@ import com.jobby.userservice.infrastructure.persistence.entities.MongoOwnerEntit
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface SpringDataMongoOwnersRepository extends MongoRepository<MongoOwnerEntity, Long> {
+    Optional<MongoOwnerEntity> findByUserId(Long userId);
 }

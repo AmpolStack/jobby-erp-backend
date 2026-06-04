@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.security;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.infrastructure.adapter.encrypt.EncryptionCryptography;
 import com.jobby.infrastructure.configurations.EncryptConfig;
@@ -22,38 +23,38 @@ class EncryptionCryptographyTest {
     class GenerateKeyTest {
 
         @Test
-        @DisplayName("Should successfully generate AES-128 key")
-        void shouldGenerateAES128Key() throws NoSuchAlgorithmException {
+        @DisplayName("generates AES-128 key")
+        void givenAes128_whenGenerateKey_returns16ByteKey() throws NoSuchAlgorithmException {
             SecretKey key = EncryptionCryptography.generateKey("AES", 128);
 
             assertThat(key).isNotNull();
             assertThat(key.getAlgorithm()).isEqualTo("AES");
-            assertThat(key.getEncoded()).hasSize(16); // 128 bits = 16 bytes
+            assertThat(key.getEncoded()).hasSize(16);
         }
 
         @Test
-        @DisplayName("Should successfully generate AES-192 key")
-        void shouldGenerateAES192Key() throws NoSuchAlgorithmException {
+        @DisplayName("generates AES-192 key")
+        void givenAes192_whenGenerateKey_returns24ByteKey() throws NoSuchAlgorithmException {
             SecretKey key = EncryptionCryptography.generateKey("AES", 192);
 
             assertThat(key).isNotNull();
             assertThat(key.getAlgorithm()).isEqualTo("AES");
-            assertThat(key.getEncoded()).hasSize(24); // 192 bits = 24 bytes
+            assertThat(key.getEncoded()).hasSize(24);
         }
 
         @Test
-        @DisplayName("Should successfully generate AES-256 key")
-        void shouldGenerateAES256Key() throws NoSuchAlgorithmException {
+        @DisplayName("generates AES-256 key")
+        void givenAes256_whenGenerateKey_returns32ByteKey() throws NoSuchAlgorithmException {
             SecretKey key = EncryptionCryptography.generateKey("AES", 256);
 
             assertThat(key).isNotNull();
             assertThat(key.getAlgorithm()).isEqualTo("AES");
-            assertThat(key.getEncoded()).hasSize(32); // 256 bits = 32 bytes
+            assertThat(key.getEncoded()).hasSize(32);
         }
 
         @Test
-        @DisplayName("Should generate different keys on each call")
-        void shouldGenerateDifferentKeys() throws NoSuchAlgorithmException {
+        @DisplayName("generates different keys each call")
+        void givenMultipleCalls_whenGenerateKey_returnsDifferentKeys() throws NoSuchAlgorithmException {
             SecretKey key1 = EncryptionCryptography.generateKey("AES", 256);
             SecretKey key2 = EncryptionCryptography.generateKey("AES", 256);
 
@@ -66,8 +67,8 @@ class EncryptionCryptographyTest {
     class GenerateIvTest {
 
         @Test
-        @DisplayName("Should successfully generate IV with size 12 and tLen 128")
-        void shouldGenerateIvWithStandardParams() {
+        @DisplayName("generates IV with standard params")
+        void givenStandardParams_whenGenerateIv_returnsCorrectSpec() {
             GCMParameterSpec iv = EncryptionCryptography.generateIv(12, 128);
 
             assertThat(iv).isNotNull();
@@ -76,8 +77,8 @@ class EncryptionCryptographyTest {
         }
 
         @Test
-        @DisplayName("Should successfully generate IV with size 16 and tLen 98")
-        void shouldGenerateIvWithCustomParams() {
+        @DisplayName("generates IV with custom params")
+        void givenCustomParams_whenGenerateIv_returnsCorrectSpec() {
             GCMParameterSpec iv = EncryptionCryptography.generateIv(16, 98);
 
             assertThat(iv).isNotNull();
@@ -86,8 +87,8 @@ class EncryptionCryptographyTest {
         }
 
         @Test
-        @DisplayName("Should generate different IVs each time")
-        void shouldGenerateDifferentIvs() {
+        @DisplayName("generates different IVs each call")
+        void givenMultipleCalls_whenGenerateIv_returnsDifferentIvs() {
             GCMParameterSpec iv1 = EncryptionCryptography.generateIv(12, 128);
             GCMParameterSpec iv2 = EncryptionCryptography.generateIv(12, 128);
 
@@ -95,8 +96,8 @@ class EncryptionCryptographyTest {
         }
 
         @Test
-        @DisplayName("Should successfully generate IV with size 8 and tLen 112")
-        void shouldGenerateIvWithSmallSize() {
+        @DisplayName("generates IV with size 8")
+        void givenSize8_whenGenerateIv_returnsCorrectSpec() {
             GCMParameterSpec iv = EncryptionCryptography.generateIv(8, 112);
 
             assertThat(iv).isNotNull();
@@ -105,8 +106,8 @@ class EncryptionCryptographyTest {
         }
 
         @Test
-        @DisplayName("Should successfully generate IV with size 1 and tLen 120")
-        void shouldGenerateIvWithMinimalSize() {
+        @DisplayName("generates IV with minimal size")
+        void givenMinimalSize_whenGenerateIv_returnsCorrectSpec() {
             GCMParameterSpec iv = EncryptionCryptography.generateIv(1, 120);
 
             assertThat(iv).isNotNull();
@@ -120,8 +121,8 @@ class EncryptionCryptographyTest {
     class ValidateConfigTest {
 
         @Test
-        @DisplayName("Should successfully validate valid config")
-        void shouldValidateValidConfig() {
+        @DisplayName("valid config passes")
+        void givenValidConfig_whenValidateConfig_returnsSuccess() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
             EncryptConfig config = new EncryptConfig();
@@ -133,22 +134,22 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("Should fail validation with null config")
-        void shouldFailWithNullConfig() {
+        @DisplayName("null config fails")
+        void givenNullConfig_whenValidateConfig_returnsInvalidOptionError() {
             var result = EncryptionCryptography.validateConfig(null);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
             assertThat(result.error().getFields()[0].getInstance()).isEqualTo("encrypt-config");
         }
 
         @Test
-        @DisplayName("Should fail validation with blank key")
-        void shouldFailWithBlankKey() {
+        @DisplayName("blank key fails")
+        void givenBlankKey_whenValidateConfig_returnsBlankError() {
             EncryptConfig config = new EncryptConfig();
             config.setSecretKey("   ");
             EncryptConfig.Iv iv = new EncryptConfig.Iv();
@@ -158,13 +159,13 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_BLANK);
         }
 
         @Test
-        @DisplayName("Should fail validation with null key")
-        void shouldFailWithNullKey() {
+        @DisplayName("null key fails")
+        void givenNullKey_whenValidateConfig_returnsNullError() {
             EncryptConfig config = new EncryptConfig();
             config.setSecretKey(null);
             EncryptConfig.Iv iv = new EncryptConfig.Iv();
@@ -174,31 +175,31 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_NULL);
         }
 
         @Test
-        @DisplayName("Should fail validation with invalid tLen")
-        void shouldFailWithInvalidTLen() {
+        @DisplayName("invalid tLen fails")
+        void givenInvalidTLen_whenValidateConfig_returnsInvalidOptionError() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
             EncryptConfig config = new EncryptConfig();
             config.setSecretKey(encodedKey);
             EncryptConfig.Iv iv = new EncryptConfig.Iv();
             iv.setLength(12);
-            iv.setTLen(64); // Invalid tLen
+            iv.setTLen(64);
             config.setIv(iv);
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
         }
 
         @Test
-        @DisplayName("Should succeed with tLen 98")
-        void shouldSucceedWithTLen98() {
+        @DisplayName("tLen 98 passes")
+        void givenTLen98_whenValidateConfig_returnsSuccess() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
             EncryptConfig config = new EncryptConfig();
@@ -210,12 +211,12 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("Should succeed with tLen 112")
-        void shouldSucceedWithTLen112() {
+        @DisplayName("tLen 112 passes")
+        void givenTLen112_whenValidateConfig_returnsSuccess() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
             EncryptConfig config = new EncryptConfig();
@@ -227,12 +228,12 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
 
         @Test
-        @DisplayName("Should succeed with tLen 120")
-        void shouldSucceedWithTLen120() {
+        @DisplayName("tLen 120 passes")
+        void givenTLen120_whenValidateConfig_returnsSuccess() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
             EncryptConfig config = new EncryptConfig();
@@ -244,7 +245,7 @@ class EncryptionCryptographyTest {
 
             var result = EncryptionCryptography.validateConfig(config);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
         }
     }
 
@@ -253,8 +254,8 @@ class EncryptionCryptographyTest {
     class IsValidTLenTest {
 
         @Test
-        @DisplayName("Should return true for valid tLen values: 98, 112, 120, 128")
-        void shouldReturnTrueForValidTLens() {
+        @DisplayName("valid tLens return true")
+        void givenValidTLen_whenIsValidTLen_returnsTrue() {
             assertThat(EncryptionCryptography.isValidTLen(98)).isTrue();
             assertThat(EncryptionCryptography.isValidTLen(112)).isTrue();
             assertThat(EncryptionCryptography.isValidTLen(120)).isTrue();
@@ -262,8 +263,8 @@ class EncryptionCryptographyTest {
         }
 
         @Test
-        @DisplayName("Should return false for invalid tLen values")
-        void shouldReturnFalseForInvalidTLens() {
+        @DisplayName("invalid tLens return false")
+        void givenInvalidTLen_whenIsValidTLen_returnsFalse() {
             assertThat(EncryptionCryptography.isValidTLen(64)).isFalse();
             assertThat(EncryptionCryptography.isValidTLen(100)).isFalse();
             assertThat(EncryptionCryptography.isValidTLen(256)).isFalse();

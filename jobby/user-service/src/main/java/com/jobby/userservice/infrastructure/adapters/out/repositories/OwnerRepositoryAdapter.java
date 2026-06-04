@@ -1,19 +1,18 @@
 package com.jobby.userservice.infrastructure.adapters.out.repositories;
 
+import com.jobby.domain.functional.PersistenceTask;
 import com.jobby.domain.mobility.error.Error;
+import com.jobby.domain.mobility.error.ErrorType;
+import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.domain.ports.SafeResultValidator;
-import com.jobby.userservice.domain.models.Owner;
-import com.jobby.userservice.domain.models.User;
-import com.jobby.userservice.domain.ports.OwnerRepository;
-import com.jobby.userservice.infrastructure.mappers.entities.MongoOwnerMapper;
-import com.jobby.userservice.infrastructure.mappers.entities.MongoUserMapper;
-import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoOwnersRepository;
-import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoUsersRepository;
-import com.jobby.infrastructure.transaction.proxy.MongoDbSpringDataHandler;
 import com.jobby.infrastructure.security.SecurityOrchestrator;
-import com.jobby.infrastructure.transaction.TransactionExecutor;
+import com.jobby.infrastructure.transaction.proxy.PersistenceProxy;
+import com.jobby.userservice.domain.models.aggregate.Owner;
+import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
+import com.jobby.userservice.infrastructure.persistence.mappers.entities.MongoOwnerMapper;
+import com.jobby.userservice.infrastructure.persistence.repository.SpringDataMongoOwnersRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -22,66 +21,51 @@ import org.springframework.stereotype.Repository;
 public class OwnerRepositoryAdapter implements OwnerRepository {
 
     private final SpringDataMongoOwnersRepository ownersCollection;
-    private final SpringDataMongoUsersRepository userCollection;
     private final SafeResultValidator safeResultValidator;
     private final MongoOwnerMapper mongoOwnerMapper;
-    private final MongoUserMapper userMapper;
-    private final TransactionExecutor transaction;
     private final SecurityOrchestrator securityOrchestrator;
+    private final PersistenceProxy proxy;
 
     @Override
-    public Result<Void, Error> save(Owner owner, User user) {
+    public Result<PersistenceTask, Error> prepareSave(Owner owner) {
         var ownerEntity = this.mongoOwnerMapper.toEntity(owner);
-        var userEntity = this.userMapper.toEntity(user);
-
         return ValidationChain.create()
                 .add(this.securityOrchestrator
                         .secure()
-                        .add(ownerEntity.getAlternativeEmail())
-                        .add(userEntity.getEmail())
-                        .add(userEntity.getPhone())
-                        .add(userEntity.getFirstName())
-                        .add(userEntity.getLastName())
-                        .add(userEntity.getIdentificationNumber())
+                        .add(ownerEntity.getRecoveryEmail())
                         .build()
                 )
                 .add(this.safeResultValidator.validate(ownerEntity))
-                .add(this.safeResultValidator.validate(userEntity))
                 .build()
-                .flatMap(v -> this.transaction
-                        .write()
-                        .add(()-> this.ownersCollection.save(ownerEntity),
-                                new MongoDbSpringDataHandler())
-                        .add(()-> this.userCollection.save(userEntity),
-                                new MongoDbSpringDataHandler())
-                        .build()
+                .map(v -> () -> this.ownersCollection.save(ownerEntity));
+    }
+
+    @Override
+    public Result<Owner, Error> getById(long id) {
+        return this.proxy.read(()-> this.ownersCollection.findById(id))
+                .flatMap(optional
+                        -> optional.map(owner -> this.securityOrchestrator
+                                .reverse()
+                                .add(owner.getRecoveryEmail())
+                                .build()
+                                .map(v -> this.mongoOwnerMapper.toDomain(owner)))
+                        .orElse(Result.failure(ErrorType.USER_NOT_FOUND,
+                                new Field("owner", "There is no registered owner with that ID")))
                 );
     }
 
     @Override
-    public Result<Boolean, Error> existByEmail(String email) {
-        return this.securityOrchestrator.index(email)
-                .flatMap(index -> this.transaction.read(
-                        ()-> this.userCollection.existsByEmail_Index(index),
-                        new MongoDbSpringDataHandler())
-                );
-    }
-
-    @Override
-    public Result<Boolean, Error> existByPhone(String phone) {
-        return this.securityOrchestrator.index(phone)
-                .flatMap(index -> this.transaction.read(
-                        ()-> this.userCollection.existsByPhone_Index(index),
-                        new MongoDbSpringDataHandler())
-                );
-    }
-
-    @Override
-    public Result<Boolean, Error> existByIdentificationNumber(String identificationNumber) {
-        return this.securityOrchestrator.index(identificationNumber)
-                .flatMap(index -> this.transaction.read(
-                        ()-> this.userCollection.existsByIdentificationNumber_Index(index),
-                        new MongoDbSpringDataHandler())
+    public Result<Owner, Error> getByUserId(long userId) {
+        return this.proxy.read(()-> this.ownersCollection.findByUserId(userId))
+                .flatMap(optional
+                        -> optional.map(owner -> this.securityOrchestrator
+                                .reverse()
+                                .add(owner.getRecoveryEmail())
+                                .build()
+                                .map(v -> this.mongoOwnerMapper.toDomain(owner)))
+                        .orElse(Result.failure(ErrorType.USER_NOT_FOUND,
+                                new Field("owner", "There is no registered owner with that ID")))
                 );
     }
 }
+

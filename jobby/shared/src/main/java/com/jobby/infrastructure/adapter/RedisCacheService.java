@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
@@ -10,15 +11,16 @@ import org.springframework.dao.QueryTimeoutException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
-
 import java.time.Duration;
 
 public class RedisCacheService implements CacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
-    public RedisCacheService(RedisTemplate<String, Object> redisTemplate) {
+    public RedisCacheService(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
     }
 
     private static final Result<?, Error> REDIS_CONNECTION_FAILURE_RESULT =  Result.failure(
@@ -30,7 +32,7 @@ public class RedisCacheService implements CacheService {
     );
 
     @Override
-    public <T> Result<Void, Error> put(String key, T value, Duration ttl) {
+    public <T> Result<Void, Error> register(String key, T value, Duration ttl) {
         return ValidationChain.create()
                 .validateInternalNotBlank(key, "cache-key")
                 .build()
@@ -76,11 +78,11 @@ public class RedisCacheService implements CacheService {
                         return Result.propagateFailure(REDIS_CONNECTION_FAILURE_RESULT);
                     }
 
-                    T response;
                     try{
-                        response = type.cast(value);
+                        T response = objectMapper.convertValue(value, type);
+                        return Result.success(response);
                     }
-                    catch(ClassCastException e){
+                    catch(IllegalArgumentException e){
                         return Result.failure(
                                 ErrorType.ITS_OPERATION_ERROR,
                                 new Field(
@@ -89,13 +91,11 @@ public class RedisCacheService implements CacheService {
                                 )
                         );
                     }
-
-                    return Result.success(response);
                 });
     }
 
     @Override
-    public Result<Void, Error> evict(String key) {
+    public Result<Void, Error> remove(String key) {
         return ValidationChain.create()
                 .validateInternalNotBlank(key, "cache-key")
                 .build()

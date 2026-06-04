@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0; padding:0; background:#f5f5f5; font-family: Arial, sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5; padding: 2rem 0;">
+    <tr><td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e0e0e0;">
+
+            <!-- Header -->
+            <tr>
+                <td style="background:#4328b1; padding:2rem; text-align:center;">
+                    <span style="font-size:24px; font-weight:bold; color:#ffffff;">jobby</span>
+                </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+                <td style="padding:2.5rem;">
+                    <p style="font-size:16px; color:#1a1a1a; margin:0 0 0.5rem;">Hi {{name}},</p>
+                    <p style="font-size:16px; color:#444444; line-height:1.7; margin:0 0 1.5rem;">
+                        The email address associated with your Jobby account was recently updated.
+                    </p>
+
+                    <!-- Date -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1.5rem;">
+                        <tr>
+                            <td style="background:#f4f1fd; border-radius:12px; padding:1.25rem 1.5rem;">
+                                <p style="font-size:13px; color:#888888; margin:0 0 4px;">Date and time</p>
+                                <p style="font-size:15px; color:#4328b1; font-weight:bold; margin:0;">{{datetime}}</p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="font-size:16px; color:#444444; line-height:1.7; margin:0 0 1.5rem;">
+                        If you made this change, no action is needed. You can now sign in using your new email address.
+                    </p>
+
+                    <!-- Warning -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:1.5rem;">
+                        <tr>
+                            <td style="background:#fff8e1; border-left:3px solid #f59e0b; padding:0.75rem 1rem;">
+                                <p style="font-size:13px; color:#92600a; margin:0;">
+                                    If you didn't make this change,
+                                    <a href="{{support_url}}" style="color:#92600a; font-weight:bold;">contact our support team immediately</a>
+                                    to secure your account.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="font-size:14px; color:#888888; line-height:1.7; margin:0;">
+                        This is an automated security notification. Please do not reply to this email.
+                    </p>
+                </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+                <td style="border-top:1px solid #e0e0e0; padding:1.25rem 2.5rem; text-align:center;">
+                    <p style="font-size:12px; color:#aaaaaa; margin:0;">
+                        © {{year}} Jobby &nbsp;·&nbsp;
+                        <a href="#" style="color:#4328b1; text-decoration:none;">Privacy policy</a>
+                        &nbsp;·&nbsp;
+                        <a href="#" style="color:#4328b1; text-decoration:none;">Support</a>
+                    </p>
+                </td>
+            </tr>
+
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

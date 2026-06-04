@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter.encrypt;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.infrastructure.configurations.EncryptConfig;
 import org.junit.jupiter.api.DisplayName;
@@ -13,11 +14,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("EncryptionCryptography - Unit Tests")
 class EncryptionCryptographyTest {
 
-    // ─── Utilidad: no instanciable ───────────────────────────────────────────
-
     @Test
-    @DisplayName("constructor: lanza UnsupportedOperationException al intentar instanciar")
-    void constructor_throwsUnsupportedOperationException() {
+    @DisplayName("throws UnsupportedOperationException when instantiated")
+    void givenInstantiated_whenConstructor_throwsUnsupportedOperationException() {
         assertThatThrownBy(() -> {
             var ctor = EncryptionCryptography.class.getDeclaredConstructor();
             ctor.setAccessible(true);
@@ -25,11 +24,9 @@ class EncryptionCryptographyTest {
         }).hasCauseInstanceOf(UnsupportedOperationException.class);
     }
 
-    // ─── generateKey ────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("generateKey: AES 128 bits genera una clave de 16 bytes")
-    void generateKey_aes128_generates16ByteKey() throws NoSuchAlgorithmException {
+    @DisplayName("AES 128 generates 16-byte key")
+    void givenAes128_whenGenerateKey_returns16ByteKey() throws NoSuchAlgorithmException {
         var key = EncryptionCryptography.generateKey("AES", 128);
 
         assertThat(key).isNotNull();
@@ -38,19 +35,17 @@ class EncryptionCryptographyTest {
     }
 
     @Test
-    @DisplayName("generateKey: AES 256 bits genera una clave de 32 bytes")
-    void generateKey_aes256_generates32ByteKey() throws NoSuchAlgorithmException {
+    @DisplayName("AES 256 generates 32-byte key")
+    void givenAes256_whenGenerateKey_returns32ByteKey() throws NoSuchAlgorithmException {
         var key = EncryptionCryptography.generateKey("AES", 256);
 
         assertThat(key).isNotNull();
         assertThat(key.getEncoded()).hasSize(32);
     }
 
-    // ─── generateIv ─────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("generateIv: genera GCMParameterSpec con el tamaño de IV y tLen correctos")
-    void generateIv_withSize12AndTLen128_returnsCorrectSpec() {
+    @DisplayName("returns GCMParameterSpec with correct IV and tLen")
+    void givenSize12AndTLen128_whenGenerateIv_returnsCorrectSpec() {
         var iv = EncryptionCryptography.generateIv(12, 128);
 
         assertThat(iv).isNotNull();
@@ -59,72 +54,67 @@ class EncryptionCryptographyTest {
     }
 
     @Test
-    @DisplayName("generateIv: llamadas consecutivas producen IVs distintos (aleatoriedad)")
-    void generateIv_calledTwice_producesDifferentIvs() {
+    @DisplayName("consecutive calls produce different IVs")
+    void givenCalledTwice_whenGenerateIv_returnsDifferentIvs() {
         var iv1 = EncryptionCryptography.generateIv(12, 128);
         var iv2 = EncryptionCryptography.generateIv(12, 128);
 
         assertThat(iv1.getIV()).isNotEqualTo(iv2.getIV());
     }
 
-    // ─── validateConfig ──────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("validateConfig: config nula retorna INVALID_OPTION_PARAMETER")
-    void validateConfig_nullConfig_returnsFailure() {
+    @DisplayName("null config returns invalid option")
+    void givenNullConfig_whenValidateConfig_returnsInvalidOptionParameter() {
         var result = EncryptionCryptography.validateConfig(null);
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_INVALID_OPTION_PARAMETER);
     }
 
     @Test
-    @DisplayName("validateConfig: secretKey en blanco retorna failure")
-    void validateConfig_blankSecretKey_returnsFailure() {
+    @DisplayName("blank secretKey returns failure")
+    void givenBlankSecretKey_whenValidateConfig_returnsFailure() {
         var config = new EncryptConfig("   ", new EncryptConfig.Iv(12, 128));
 
         var result = EncryptionCryptography.validateConfig(config);
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("validateConfig: tLen inválido (64) retorna failure")
-    void validateConfig_invalidTLen_returnsFailure() {
+    @DisplayName("invalid tLen returns failure")
+    void givenInvalidTLen_whenValidateConfig_returnsFailure() {
         var config = new EncryptConfig("validKey", new EncryptConfig.Iv(12, 64));
 
         var result = EncryptionCryptography.validateConfig(config);
 
-        assertThat(result.isFailure()).isTrue();
+        ResultAssertions.assertFailure(result);
     }
 
     @Test
-    @DisplayName("validateConfig: configuración completamente válida retorna success")
-    void validateConfig_validConfig_returnsSuccess() {
+    @DisplayName("valid config returns success")
+    void givenValidConfig_whenValidateConfig_returnsSuccess() {
         var config = new EncryptConfig("myValidSecretKey", new EncryptConfig.Iv(12, 128));
 
         var result = EncryptionCryptography.validateConfig(config);
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
     }
 
-    // ─── isValidTLen ────────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("isValidTLen: 128 es un tLen válido")
-    void isValidTLen_128_returnsTrue() {
+    @DisplayName("128 is valid")
+    void given128_whenIsValidTLen_returnsTrue() {
         assertThat(EncryptionCryptography.isValidTLen(128)).isTrue();
     }
 
     @Test
-    @DisplayName("isValidTLen: 98 es un tLen válido (valor límite inferior)")
-    void isValidTLen_98_returnsTrue() {
+    @DisplayName("98 is valid (lower boundary)")
+    void given98_whenIsValidTLen_returnsTrue() {
         assertThat(EncryptionCryptography.isValidTLen(98)).isTrue();
     }
 
     @Test
-    @DisplayName("isValidTLen: 64 no es un tLen válido")
-    void isValidTLen_64_returnsFalse() {
+    @DisplayName("64 is invalid")
+    void given64_whenIsValidTLen_returnsFalse() {
         assertThat(EncryptionCryptography.isValidTLen(64)).isFalse();
     }
 }

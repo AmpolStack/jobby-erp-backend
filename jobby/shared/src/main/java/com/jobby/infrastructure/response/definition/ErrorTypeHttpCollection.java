@@ -3,10 +3,13 @@ package com.jobby.infrastructure.response.definition;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 
+@Slf4j
 public class ErrorTypeHttpCollection {
     private static final Map<ErrorType, HttpStatus> ERROR_HTTP_MAP = new EnumMap<>(ErrorType.class);
     static {
@@ -48,14 +51,22 @@ public class ErrorTypeHttpCollection {
     }
 
     public static Error toResponseError(Error error){
-        var errorTye = error.getCode().toString();
+        var type = error.getCode().toString();
 
-        if(errorTye.startsWith("ITN")){
+        if(type.startsWith("ITN")){
+
+            log.warn("[INTERNAL VALIDATION ERROR] type={} fields={}",
+                    type, Arrays.toString(error.getFields()));
+
             return new Error(error.getCode(), new Field[]{
                     new Field("Internal Validation Error", "Validation error in the entered data")
             });
         }
-        if(errorTye.startsWith("ITS")){
+        if(type.startsWith("ITS")){
+
+            log.warn("[INTERNAL SYSTEM ERROR] type={} fields={}",
+                    type, Arrays.toString(error.getFields()));
+
             return new Error(error.getCode(), new Field[]{
                     new Field("Internal System Error", "An internal error has occurred. Please try again later.")
             });
