@@ -1,11 +1,11 @@
-package com.jobby.userservice.domain.vo;
+package com.jobby.userservice.domain.models.vo.shared;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.domain.models.ContactType;
+import com.jobby.userservice.domain.models.reference.ContactType;
 import lombok.*;
 
 @Getter
