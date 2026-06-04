@@ -2,15 +2,26 @@ package com.jobby.infrastructure.response.implementation.problemdetails;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
+import com.jobby.infrastructure.adapter.SupportIdProvider;
 import com.jobby.infrastructure.response.definition.HttpResponseProcessor;
+import io.micrometer.tracing.Tracer;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Arrays;
+import java.util.Objects;
+
+@AllArgsConstructor
 public class ProblemDetailsResultMapper implements HttpResponseProcessor {
+
+    private final SupportIdProvider supportIdProvider;
     
     public <T> ResponseEntity<?> map(Result<T, Error> result, HttpStatus successStatus) {
         if (result.isFailure()) {
-            return ProblemDetailsMapper.toProblemDetails(result.error());
+            var supportId = this.supportIdProvider.current()
+                                                .orElse("unavailable");
+            return ProblemDetailsMapper.toProblemDetails(result.error(), supportId);
         }
         return ResponseEntity.status(successStatus).body(result.data());
     }
