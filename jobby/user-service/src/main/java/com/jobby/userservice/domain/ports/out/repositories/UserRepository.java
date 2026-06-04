@@ -1,9 +1,9 @@
-package com.jobby.userservice.domain.ports.out.repositories.models;
+package com.jobby.userservice.domain.ports.out.repositories;
 
 import com.jobby.domain.functional.PersistenceTask;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.userservice.domain.models.User;
+import com.jobby.userservice.domain.models.aggregate.User;
 
 public interface UserRepository {
     Result<PersistenceTask, Error> prepareSave(User user);
