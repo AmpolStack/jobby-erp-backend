@@ -1,9 +1,8 @@
 package com.jobby.userservice.domain.vo;
 
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.NullityOps;
-import com.jobby.userservice.ResultAssertions;
-import com.jobby.userservice.domain.models.ContactType;
+import com.jobby.userservice.domain.models.reference.ContactType;
+import com.jobby.userservice.domain.models.vo.shared.ContactValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
