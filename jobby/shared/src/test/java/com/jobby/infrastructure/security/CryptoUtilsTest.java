@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.security;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.infrastructure.adapter.CryptoUtils;
 import org.junit.jupiter.api.DisplayName;
@@ -19,83 +20,83 @@ class CryptoUtilsTest {
     class Base64OperationsTest {
 
         @Test
-        @DisplayName("Should successfully decode valid Base64 string")
-        void shouldDecodeValidBase64() {
+        @DisplayName("valid Base64 decodes successfully")
+        void givenValidBase64_whenDecodeBase64_returnsDecodedData() {
             String original = "Hello, World!";
             String encoded = Base64.getEncoder().encodeToString(original.getBytes());
 
             var result = CryptoUtils.decodeBase64(encoded, "test-field");
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(new String(result.data())).isEqualTo(original);
         }
 
         @Test
-        @DisplayName("Should successfully decode Base64 with special characters")
-        void shouldDecodeBase64WithSpecialCharacters() {
+        @DisplayName("special characters decode successfully")
+        void givenSpecialChars_whenDecodeBase64_returnsDecodedData() {
             String original = "Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?`~";
             String encoded = Base64.getEncoder().encodeToString(original.getBytes());
 
             var result = CryptoUtils.decodeBase64(encoded, "test-field");
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(new String(result.data())).isEqualTo(original);
         }
 
         @Test
-        @DisplayName("Should successfully decode Base64 with unicode characters")
-        void shouldDecodeBase64WithUnicode() {
+        @DisplayName("unicode characters decode successfully")
+        void givenUnicode_whenDecodeBase64_returnsDecodedData() {
             String original = "Unicode: \u00E9\u00E0\u00FC\u00F1\u00E7 \u4E16\u754C \uD83D\uDE00";
             String encoded = Base64.getEncoder().encodeToString(original.getBytes());
 
             var result = CryptoUtils.decodeBase64(encoded, "test-field");
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(new String(result.data())).isEqualTo(original);
         }
 
         @Test
-        @DisplayName("Should successfully decode empty Base64 string")
-        void shouldDecodeEmptyBase64() {
+        @DisplayName("empty Base64 returns blank error")
+        void givenEmptyBase64_whenDecodeBase64_returnsBlankError() {
             String encoded = Base64.getEncoder().encodeToString(new byte[0]);
 
             var result = CryptoUtils.decodeBase64(encoded, "test-field");
 
-            assertThat(result.isFailure()).isTrue();
-            assertThat(result.error().getCode() == ErrorType.ITN_VALIDATION_BLANK);
+            ResultAssertions.assertFailure(result);
+            assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_BLANK);
         }
 
         @Test
-        @DisplayName("Should fail with invalid Base64 input")
-        void shouldFailWithInvalidBase64() {
+        @DisplayName("invalid Base64 returns serialization error")
+        void givenInvalidBase64_whenDecodeBase64_returnsSerializationError() {
             var result = CryptoUtils.decodeBase64("not-valid-base64!!!", "test-field");
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_SERIALIZATION_ERROR);
             assertThat(result.error().getFields()[0].getInstance()).isEqualTo("test-field");
         }
 
         @Test
-        @DisplayName("Should fail with blank Base64 input")
-        void shouldFailWithBlankBase64() {
+        @DisplayName("blank input returns blank error")
+        void givenBlank_whenDecodeBase64_returnsBlankError() {
             var result = CryptoUtils.decodeBase64("   ", "test-field");
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_BLANK);
         }
 
         @Test
-        @DisplayName("Should fail with null Base64 input")
-        void shouldFailWithNullBase64() {
+        @DisplayName("null input returns null error")
+        void givenNull_whenDecodeBase64_returnsNullError() {
             var result = CryptoUtils.decodeBase64(null, "test-field");
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_NULL);
         }
 
         @Test
-        @DisplayName("Should successfully encode byte array to Base64")
-        void shouldEncodeBase64() {
+        @DisplayName("encodes byte array to Base64")
+        void givenByteArray_whenEncodeBase64_returnsEncodedString() {
             byte[] data = "Hello, World!".getBytes();
 
             String encoded = CryptoUtils.encodeBase64(data);
@@ -104,22 +105,21 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should successfully encode empty byte array")
-        void shouldEncodeEmptyByteArray() {
+        @DisplayName("encodes empty byte array to empty string")
+        void givenEmptyArray_whenEncodeBase64_returnsEmptyString() {
             String encoded = CryptoUtils.encodeBase64(new byte[0]);
 
             assertThat(encoded).isEmpty();
         }
 
         @Test
-        @DisplayName("Should successfully encode byte array with binary data")
-        void shouldEncodeBinaryData() {
+        @DisplayName("encodes binary data and decodes back")
+        void givenBinaryData_whenEncodeBase64_roundtripsSuccessfully() {
             byte[] data = new byte[]{0x00, 0x01, 0x02, (byte) 0xFF, (byte) 0xFE, (byte) 0xFD};
 
             String encoded = CryptoUtils.encodeBase64(data);
 
             assertThat(encoded).isNotBlank();
-            // Verify it can be decoded back
             byte[] decoded = Base64.getDecoder().decode(encoded);
             assertThat(decoded).containsExactly(data);
         }
@@ -130,8 +130,8 @@ class CryptoUtilsTest {
     class KeyOperationsTest {
 
         @Test
-        @DisplayName("Should successfully create SecretKeySpec")
-        void shouldCreateKeySpec() {
+        @DisplayName("creates SecretKeySpec")
+        void givenKeyBytesAndAlgorithm_whenCreateKeySpec_returnsSecretKeySpec() {
             byte[] keyBytes = new byte[32];
             String algorithm = "AES";
 
@@ -143,8 +143,8 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should successfully parse valid KeySpec")
-        void shouldParseValidKeySpec() {
+        @DisplayName("parses valid key spec")
+        void givenValidEncodedKey_whenParseKeySpec_returnsSecretKeySpec() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
 
@@ -156,16 +156,16 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should return null when parsing KeySpec with invalid Base64")
-        void shouldReturnNullForInvalidBase64KeySpec() {
+        @DisplayName("invalid Base64 returns null key spec")
+        void givenInvalidBase64_whenParseKeySpec_returnsNull() {
             var keySpec = CryptoUtils.parseKeySpec("AES", "not-valid-base64!!!");
 
             assertThat(keySpec).isNull();
         }
 
         @Test
-        @DisplayName("Should successfully get key length in bits")
-        void shouldGetKeyLengthInBits() {
+        @DisplayName("returns key length in bits")
+        void givenKeyBytes_whenGetKeyLengthInBits_returnsLength() {
             assertThat(CryptoUtils.getKeyLengthInBits(new byte[16])).isEqualTo(128);
             assertThat(CryptoUtils.getKeyLengthInBits(new byte[24])).isEqualTo(192);
             assertThat(CryptoUtils.getKeyLengthInBits(new byte[32])).isEqualTo(256);
@@ -178,8 +178,8 @@ class CryptoUtilsTest {
     class ValidationOperationsTest {
 
         @Test
-        @DisplayName("Should return true for valid key lengths")
-        void shouldReturnTrueForValidKeyLengths() {
+        @DisplayName("valid key lengths return true")
+        void givenValidLength_whenIsValidKeyLength_returnsTrue() {
             Integer[] validLengths = {128, 192, 256};
 
             assertThat(CryptoUtils.isValidKeyLength(128, validLengths)).isTrue();
@@ -188,8 +188,8 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should return false for invalid key lengths")
-        void shouldReturnFalseForInvalidKeyLengths() {
+        @DisplayName("invalid key lengths return false")
+        void givenInvalidLength_whenIsValidKeyLength_returnsFalse() {
             Integer[] validLengths = {128, 192, 256};
 
             assertThat(CryptoUtils.isValidKeyLength(64, validLengths)).isFalse();
@@ -198,8 +198,8 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should return true for valid options")
-        void shouldReturnTrueForValidOptions() {
+        @DisplayName("valid options return true")
+        void givenValidOption_whenIsValidOption_returnsTrue() {
             String[] validOptions = {"AES", "DES", "RSA"};
 
             assertThat(CryptoUtils.isValidOption("AES", validOptions)).isTrue();
@@ -208,8 +208,8 @@ class CryptoUtilsTest {
         }
 
         @Test
-        @DisplayName("Should return false for invalid options")
-        void shouldReturnFalseForInvalidOptions() {
+        @DisplayName("invalid options return false")
+        void givenInvalidOption_whenIsValidOption_returnsFalse() {
             String[] validOptions = {"AES", "DES", "RSA"};
 
             assertThat(CryptoUtils.isValidOption("Blowfish", validOptions)).isFalse();
@@ -223,80 +223,80 @@ class CryptoUtilsTest {
     class ValidateAndParseKeyTest {
 
         @Test
-        @DisplayName("Should successfully validate and parse valid 256-bit key")
-        void shouldValidateAndParseValid256BitKey() {
+        @DisplayName("valid 256-bit key parses successfully")
+        void givenValid256BitKey_whenValidateAndParseKey_returnsKeySpec() {
             byte[] keyBytes = new byte[32];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
 
             var result = CryptoUtils.validateAndParseKey("AES", encodedKey, new Integer[]{128, 192, 256});
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data()).isInstanceOf(SecretKeySpec.class);
             assertThat(result.data().getAlgorithm()).isEqualTo("AES");
         }
 
         @Test
-        @DisplayName("Should successfully validate and parse valid 128-bit key")
-        void shouldValidateAndParseValid128BitKey() {
+        @DisplayName("valid 128-bit key parses successfully")
+        void givenValid128BitKey_whenValidateAndParseKey_returnsKeySpec() {
             byte[] keyBytes = new byte[16];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
 
             var result = CryptoUtils.validateAndParseKey("AES", encodedKey, new Integer[]{128, 192, 256});
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data().getEncoded()).hasSize(16);
         }
 
         @Test
-        @DisplayName("Should successfully validate and parse valid 192-bit key")
-        void shouldValidateAndParseValid192BitKey() {
+        @DisplayName("valid 192-bit key parses successfully")
+        void givenValid192BitKey_whenValidateAndParseKey_returnsKeySpec() {
             byte[] keyBytes = new byte[24];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
 
             var result = CryptoUtils.validateAndParseKey("AES", encodedKey, new Integer[]{128, 192, 256});
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data().getEncoded()).hasSize(24);
         }
 
         @Test
-        @DisplayName("Should fail with invalid key length")
-        void shouldFailWithInvalidKeyLength() {
-            byte[] keyBytes = new byte[20]; // 160 bits - not in valid lengths
+        @DisplayName("invalid key length returns error")
+        void givenInvalidKeyLength_whenValidateAndParseKey_returnsInvalidOptionError() {
+            byte[] keyBytes = new byte[20];
             String encodedKey = Base64.getEncoder().encodeToString(keyBytes);
 
             var result = CryptoUtils.validateAndParseKey("AES", encodedKey, new Integer[]{128, 192, 256});
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
             assertThat(result.error().getFields()[0].getInstance()).isEqualTo("key-base-64");
             assertThat(result.error().getFields()[0].getReason()).contains("Invalid key length");
         }
 
         @Test
-        @DisplayName("Should fail with invalid Base64 key")
-        void shouldFailWithInvalidBase64Key() {
+        @DisplayName("invalid Base64 key returns serialization error")
+        void givenInvalidBase64Key_whenValidateAndParseKey_returnsSerializationError() {
             var result = CryptoUtils.validateAndParseKey("AES", "not-valid-base64!!!", new Integer[]{128, 192, 256});
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_SERIALIZATION_ERROR);
         }
 
         @Test
-        @DisplayName("Should fail with blank key")
-        void shouldFailWithBlankKey() {
+        @DisplayName("blank key returns blank error")
+        void givenBlankKey_whenValidateAndParseKey_returnsBlankError() {
             var result = CryptoUtils.validateAndParseKey("AES", "   ", new Integer[]{128, 192, 256});
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_BLANK);
         }
 
         @Test
-        @DisplayName("Should fail with null key")
-        void shouldFailWithNullKey() {
+        @DisplayName("null key returns null error")
+        void givenNullKey_whenValidateAndParseKey_returnsNullError() {
             var result = CryptoUtils.validateAndParseKey("AES", null, new Integer[]{128, 192, 256});
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.ITN_VALIDATION_NULL);
         }
     }
