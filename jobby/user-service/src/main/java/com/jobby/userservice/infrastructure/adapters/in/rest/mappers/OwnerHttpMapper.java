@@ -1,13 +1,15 @@
-package com.jobby.userservice.infrastructure.adapters.in.mappers;
+package com.jobby.userservice.infrastructure.adapters.in.rest.mappers;
 
-import com.jobby.userservice.domain.commands.CreateOwnerCommand;
-import com.jobby.userservice.domain.commands.CreateUserCommand;
-import com.jobby.userservice.domain.commands.UpdateRecoveryEmailCommand;
-import com.jobby.userservice.domain.responses.ContactResponse;
-import com.jobby.userservice.domain.responses.OwnerResponse;
-import com.jobby.userservice.domain.responses.UserResponse;
-import com.jobby.userservice.infrastructure.adapters.in.requests.CreateOwnerRequest;
-import com.jobby.userservice.infrastructure.adapters.in.requests.UpdateRecoveryEmailRequest;
+import com.jobby.userservice.domain.contract.commands.CreateOwnerCommand;
+import com.jobby.userservice.domain.contract.commands.CreateUserCommand;
+import com.jobby.userservice.domain.contract.commands.RequestEmailChangeCommand;
+import com.jobby.userservice.domain.contract.commands.UpdateRecoveryEmailCommand;
+import com.jobby.userservice.domain.contract.responses.ContactResponse;
+import com.jobby.userservice.domain.contract.responses.OwnerResponse;
+import com.jobby.userservice.domain.contract.responses.UserResponse;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ChangeEmailRequest;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.CreateOwnerRequest;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateRecoveryEmailRequest;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -40,10 +42,10 @@ public interface OwnerHttpMapper {
     }
 
 
-    com.jobby.userservice.infrastructure.adapters.in.responses.ContactResponse toContactResponse(ContactResponse query);
+    com.jobby.userservice.infrastructure.adapters.in.rest.responses.ContactResponse toContactResponse(ContactResponse query);
 
-    com.jobby.userservice.infrastructure.adapters.in.responses.UserResponse toUserResponse(UserResponse query);
+    com.jobby.userservice.infrastructure.adapters.in.rest.responses.UserResponse toUserResponse(UserResponse query);
 
-    com.jobby.userservice.infrastructure.adapters.in.responses.OwnerResponse toOwnerResponse(OwnerResponse query);
+    com.jobby.userservice.infrastructure.adapters.in.rest.responses.OwnerResponse toOwnerResponse(OwnerResponse query);
 }
 
