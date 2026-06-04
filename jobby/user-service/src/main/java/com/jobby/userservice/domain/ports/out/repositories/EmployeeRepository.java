@@ -1,6 +1,6 @@
-package com.jobby.userservice.domain.ports.out.repositories.models;
+package com.jobby.userservice.domain.ports.out.repositories;
 
-import com.jobby.userservice.domain.models.Employee;
+import com.jobby.userservice.domain.models.aggregate.Employee;
 
 import java.util.List;
 import java.util.Optional;
