@@ -1,9 +1,10 @@
-package com.jobby.userservice.domain.models;
+package com.jobby.userservice.domain.models.aggregate;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.domain.vo.Email;
+import com.jobby.userservice.domain.models.vo.shared.Email;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,9 +43,13 @@ public class Owner {
                 });
     }
 
-    public void removeRecoveryEmail() {
-        this.recoveryEmail = null;
-        this.modifiedAt = Instant.now();
+    public Result<Void, Error> removeRecoveryEmail() {
+        return ValidationChain.create().build()
+                .map(v -> {
+                    this.recoveryEmail = null;
+                    this.modifiedAt = Instant.now();
+                    return null;
+                });
     }
 
     public static Owner reconstruct(long id,
