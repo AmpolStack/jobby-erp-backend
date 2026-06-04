@@ -60,7 +60,7 @@ public class ValidationChain {
                 return Result.failure(ErrorType.VALIDATION_ERROR,
                         new Field(fieldName, fieldName + " is blank"));
             }
-            String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+            String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
             if (!email.matches(emailRegex)) {
                 return Result.failure(ErrorType.VALIDATION_ERROR,
                         new Field(fieldName, fieldName + " must be a valid email"));
