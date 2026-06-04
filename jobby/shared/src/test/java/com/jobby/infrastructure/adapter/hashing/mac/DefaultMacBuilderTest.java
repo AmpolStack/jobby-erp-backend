@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.adapter.hashing.mac;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +16,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DefaultMacBuilderTest {
 
     private static final String ALGORITHM = "HmacSHA256";
-    // HmacSHA256 produce exactamente 32 bytes (256 bits)
     private static final int HMAC_SHA256_OUTPUT_BYTES = 32;
 
     private SecretKeySpec validKey;
@@ -25,61 +25,57 @@ class DefaultMacBuilderTest {
         validKey = new SecretKeySpec(new byte[32], ALGORITHM);
     }
 
-    // ─── build: camino feliz ─────────────────────────────────────────────────
-
     @Test
-    @DisplayName("build: configuración válida produce 32 bytes de HMAC-SHA256")
-    void build_validConfiguration_returnsMacBytes() {
+    @DisplayName("valid config produces 32-byte MAC")
+    void givenValidConfig_whenBuild_returnsMacBytes() {
         var result = new DefaultMacBuilder()
                 .setData("test message".getBytes())
                 .setKey(validKey)
                 .setAlgorithm(ALGORITHM)
                 .build();
 
-        assertThat(result.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result);
         assertThat(result.data()).hasSize(HMAC_SHA256_OUTPUT_BYTES);
     }
 
     @Test
-    @DisplayName("build: misma clave y datos producen HMAC idéntico (determinismo)")
-    void build_sameInputAndKey_producesDeterministicMac() {
+    @DisplayName("same input produces deterministic MAC")
+    void givenSameInputAndKey_whenBuild_returnsDeterministicMac() {
         byte[] data = "deterministic input".getBytes();
 
         var result1 = new DefaultMacBuilder().setData(data).setKey(validKey).setAlgorithm(ALGORITHM).build();
         var result2 = new DefaultMacBuilder().setData(data).setKey(validKey).setAlgorithm(ALGORITHM).build();
 
-        assertThat(result1.isSuccess()).isTrue();
+        ResultAssertions.assertSuccess(result1);
         assertThat(result1.data()).isEqualTo(result2.data());
     }
 
     @Test
-    @DisplayName("build: datos distintos producen HMACs distintos")
-    void build_differentData_producesDifferentMacs() {
+    @DisplayName("different data produces different MACs")
+    void givenDifferentData_whenBuild_returnsDifferentMacs() {
         var mac1 = new DefaultMacBuilder().setData("data A".getBytes()).setKey(validKey).setAlgorithm(ALGORITHM).build();
         var mac2 = new DefaultMacBuilder().setData("data B".getBytes()).setKey(validKey).setAlgorithm(ALGORITHM).build();
 
+        ResultAssertions.assertSuccess(mac1);
+        ResultAssertions.assertSuccess(mac2);
         assertThat(mac1.data()).isNotEqualTo(mac2.data());
     }
 
-    // ─── build: caminos de error ─────────────────────────────────────────────
-
     @Test
-    @DisplayName("build: algoritmo inválido retorna ITS_INVALID_OPTION_PARAMETER")
-    void build_invalidAlgorithm_returnsInvalidOptionParameter() {
+    @DisplayName("invalid algorithm returns invalid option")
+    void givenInvalidAlgorithm_whenBuild_returnsInvalidOptionParameter() {
         var result = new DefaultMacBuilder()
                 .setData("data".getBytes())
                 .setKey(validKey)
                 .setAlgorithm("INVALID_HMAC_ALGO")
                 .build();
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_INVALID_OPTION_PARAMETER);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_INVALID_OPTION_PARAMETER);
     }
 
     @Test
-    @DisplayName("build: clave RSA pública (tipo incompatible) retorna ITS_OPERATION_ERROR")
-    void build_incompatibleRsaPublicKey_returnsOperationError() throws NoSuchAlgorithmException {
-        // Una clave pública RSA es incompatible con Mac.init() que espera SecretKey
+    @DisplayName("incompatible key type returns operation error")
+    void givenIncompatibleKeyType_whenBuild_returnsOperationError() throws NoSuchAlgorithmException {
         var rsaPublicKey = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPublic();
 
         var result = new DefaultMacBuilder()
@@ -88,7 +84,6 @@ class DefaultMacBuilderTest {
                 .setAlgorithm(ALGORITHM)
                 .build();
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.error().getCode()).isEqualTo(ErrorType.ITS_OPERATION_ERROR);
+        ResultAssertions.assertFailure(result, ErrorType.ITS_OPERATION_ERROR);
     }
 }
