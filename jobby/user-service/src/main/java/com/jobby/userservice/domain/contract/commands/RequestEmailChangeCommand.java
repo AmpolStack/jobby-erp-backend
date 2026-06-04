@@ -1,4 +1,4 @@
 package com.jobby.userservice.domain.contract.commands;
 
-public record UpdateEmailRequestCommand(int userId,
+public record RequestEmailChangeCommand(long userId,
                                         String newEmail) {}
