@@ -1,8 +1,8 @@
-package com.jobby.userservice.domain.ports.out.repositories.models;
+package com.jobby.userservice.domain.ports.out.repositories;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.userservice.domain.models.IdentificationType;
+import com.jobby.userservice.domain.models.reference.IdentificationType;
 import java.util.List;
 
 public interface IdentificationTypeRepository {
