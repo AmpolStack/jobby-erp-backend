@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.vo;
+package com.jobby.userservice.domain.models.vo.ephemeral;
 
 import lombok.AllArgsConstructor;
 import java.util.UUID;
