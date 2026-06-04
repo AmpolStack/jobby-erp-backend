@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.enums;
+package com.jobby.userservice.domain.models.enums;
 
 public enum UserStatus {
     ACTIVE,
