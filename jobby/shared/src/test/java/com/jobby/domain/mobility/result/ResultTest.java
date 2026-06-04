@@ -1,5 +1,6 @@
 package com.jobby.domain.mobility.result;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
@@ -20,22 +21,21 @@ class ResultTest {
     class SuccessFactory {
 
         @Test
-        @DisplayName("creates a successful result with data")
-        void createsSuccessWithData() {
+        @DisplayName("success with data")
+        void givenData_whenSuccess_returnsSuccessWithData() {
             Result<String, String> result = Result.success("hello");
 
-            assertThat(result.isSuccess()).isTrue();
-            assertThat(result.isFailure()).isFalse();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data()).isEqualTo("hello");
             assertThat(result.error()).isNull();
         }
 
         @Test
-        @DisplayName("creates a successful result with null data")
-        void createsSuccessWithNullData() {
+        @DisplayName("success with null data")
+        void givenNullData_whenSuccess_returnsSuccessWithNullData() {
             Result<Void, String> result = Result.success(null);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data()).isNull();
         }
     }
@@ -45,35 +45,34 @@ class ResultTest {
     class FailureFactory {
 
         @Test
-        @DisplayName("creates a failed result with a generic error")
-        void createsFailureWithGenericError() {
+        @DisplayName("failure with error")
+        void givenError_whenFailure_returnsFailureWithError() {
             Result<String, String> result = Result.failure("something went wrong");
 
-            assertThat(result.isSuccess()).isFalse();
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.data()).isNull();
             assertThat(result.error()).isEqualTo("something went wrong");
         }
 
         @Test
-        @DisplayName("creates a failed result from ErrorType + Field array")
-        void createsFailureWithErrorTypeAndFieldArray() {
+        @DisplayName("failure with ErrorType and fields")
+        void givenErrorTypeAndFields_whenFailure_returnsFailureWithError() {
             Field[] fields = { new Field("name", "name is null") };
             Result<String, Error> result = Result.failure(ErrorType.VALIDATION_ERROR, fields);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.VALIDATION_ERROR);
             assertThat(result.error().getFields()).hasSize(1);
             assertThat(result.error().getFields()[0].getInstance()).isEqualTo("name");
         }
 
         @Test
-        @DisplayName("creates a failed result from ErrorType + single Field")
-        void createsFailureWithErrorTypeAndSingleField() {
+        @DisplayName("failure with ErrorType and single field")
+        void givenErrorTypeAndField_whenFailure_returnsFailureWithError() {
             Result<Integer, Error> result = Result.failure(
                     ErrorType.NOT_FOUND, new Field("id", "entity not found"));
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error().getCode()).isEqualTo(ErrorType.NOT_FOUND);
             assertThat(result.error().getFields()[0].getReason()).isEqualTo("entity not found");
         }
@@ -86,39 +85,39 @@ class ResultTest {
     class PropagateFailure {
 
         @Test
-        @DisplayName("propagates the error to a new result type")
-        void propagatesErrorTypeChange() {
+        @DisplayName("propagates error")
+        void givenError_whenPropagateFailure_propagatesError() {
             Result<String, String> original = Result.failure("db error");
             Result<Integer, String> propagated = Result.propagateFailure(original);
 
-            assertThat(propagated.isFailure()).isTrue();
+            ResultAssertions.assertFailure(propagated);
             assertThat(propagated.error()).isEqualTo("db error");
         }
 
         @Test
-        @DisplayName("propagates error replacing field name for non-ITN errors")
-        void propagatesReplacingFieldNameForNonItnErrors() {
+        @DisplayName("replaces field name for non-ITN errors")
+        void givenNonItnError_whenPropagateFailure_replacesFieldName() {
             Field[] fields = { new Field("oldField", "value is invalid") };
             Result<String, Error> original = Result.failure(
                     ErrorType.VALIDATION_ERROR, fields);
 
             Result<Integer, Error> propagated = Result.propagateFailure(original, "newField");
 
-            assertThat(propagated.isFailure()).isTrue();
+            ResultAssertions.assertFailure(propagated);
             assertThat(propagated.error().getFields()[0].getInstance()).isEqualTo("newField");
             assertThat(propagated.error().getFields()[0].getReason()).isEqualTo("value is invalid");
         }
 
         @Test
-        @DisplayName("propagates error keeping original field name for ITN errors")
-        void propagatesKeepingFieldNameForItnErrors() {
+        @DisplayName("keeps original field name for ITN errors")
+        void givenItnError_whenPropagateFailure_keepsFieldName() {
             Field[] fields = { new Field("internalField", "some reason") };
             Result<String, Error> original = Result.failure(
                     ErrorType.ITN_VALIDATION_NULL, fields);
 
             Result<Integer, Error> propagated = Result.propagateFailure(original, "newField");
 
-            assertThat(propagated.isFailure()).isTrue();
+            ResultAssertions.assertFailure(propagated);
             assertThat(propagated.error().getFields()[0].getInstance()).isEqualTo("internalField");
         }
     }
@@ -131,21 +130,21 @@ class ResultTest {
 
         @Test
         @DisplayName("transforms data on success")
-        void transformsDataOnSuccess() {
+        void givenSuccess_whenMap_transformsData() {
             Result<Integer, String> result = Result.<Integer, String>success(5)
                     .map(v -> v * 2);
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data()).isEqualTo(10);
         }
 
         @Test
         @DisplayName("skips transformation on failure")
-        void skipsTransformationOnFailure() {
+        void givenFailure_whenMap_skipsTransformation() {
             Result<Integer, String> result = Result.<Integer, String>failure("error")
                     .map(v -> v * 2);
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error()).isEqualTo("error");
         }
     }
@@ -155,32 +154,32 @@ class ResultTest {
     class FlatMap {
 
         @Test
-        @DisplayName("chains successfully when inner result is success")
-        void chainsSuccessfully() {
+        @DisplayName("chains successfully")
+        void givenSuccess_whenFlatMap_chainsSuccessfully() {
             Result<Integer, String> result = Result.<Integer, String>success(5)
                     .flatMap(v -> Result.success(v + 10));
 
-            assertThat(result.isSuccess()).isTrue();
+            ResultAssertions.assertSuccess(result);
             assertThat(result.data()).isEqualTo(15);
         }
 
         @Test
-        @DisplayName("short-circuits when outer result is failure")
-        void shortCircuitsOnOuterFailure() {
+        @DisplayName("short-circuits on outer failure")
+        void givenOuterFailure_whenFlatMap_shortCircuits() {
             Result<Integer, String> result = Result.<Integer, String>failure("error")
                     .flatMap(v -> Result.success(v + 10));
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error()).isEqualTo("error");
         }
 
         @Test
         @DisplayName("propagates inner failure")
-        void propagatesInnerFailure() {
+        void givenInnerFailure_whenFlatMap_propagatesFailure() {
             Result<Integer, String> result = Result.<Integer, String>success(5)
                     .flatMap(v -> Result.failure("inner error"));
 
-            assertThat(result.isFailure()).isTrue();
+            ResultAssertions.assertFailure(result);
             assertThat(result.error()).isEqualTo("inner error");
         }
     }
@@ -190,21 +189,25 @@ class ResultTest {
     class Fold {
 
         @Test
-        @DisplayName("executes onSuccess consumer on success")
-        void executesOnSuccessConsumer() {
+        @DisplayName("executes onSuccess consumer")
+        void givenSuccess_whenFold_executesOnSuccess() {
             StringBuilder sb = new StringBuilder();
             Result.<String, String>success("data")
-                    .fold(sb::append, err -> sb.append("FAIL"));
+                    .fold(sb::append, err -> {
+                        sb.append("FAIL");
+                    });
 
             assertThat(sb.toString()).isEqualTo("data");
         }
 
         @Test
-        @DisplayName("executes onFailure consumer on failure")
-        void executesOnFailureConsumer() {
+        @DisplayName("executes onFailure consumer")
+        void givenFailure_whenFold_executesOnFailure() {
             StringBuilder sb = new StringBuilder();
             Result.<String, String>failure("oops")
-                    .fold(data -> sb.append("OK"), sb::append);
+                    .fold(data -> sb.append("OK"), err -> {
+                        sb.append(err);
+                    });
 
             assertThat(sb.toString()).isEqualTo("oops");
         }
@@ -217,18 +220,18 @@ class ResultTest {
     class MapError {
 
         @Test
-        @DisplayName("converts a failure to a different data type")
-        void convertsFailureToDifferentDataType() {
+        @DisplayName("converts failure data type")
+        void givenFailure_whenMapError_convertsDataType() {
             Result<String, String> original = Result.failure("err");
             Result<Integer, String> mapped = Result.mapError(original);
 
-            assertThat(mapped.isFailure()).isTrue();
+            ResultAssertions.assertFailure(mapped);
             assertThat(mapped.error()).isEqualTo("err");
         }
 
         @Test
-        @DisplayName("throws InconsistencyResultException when result is success")
-        void throwsOnSuccess() {
+        @DisplayName("throws on success")
+        void givenSuccess_whenMapError_throwsException() {
             Result<String, String> original = Result.success("data");
 
             assertThatThrownBy(() -> Result.mapError(original))
@@ -243,8 +246,8 @@ class ResultTest {
     class Equality {
 
         @Test
-        @DisplayName("two successes with same data are equal")
-        void successEquality() {
+        @DisplayName("successes with same data are equal")
+        void givenSameData_whenSuccess_areEqual() {
             Result<String, String> a = Result.success("x");
             Result<String, String> b = Result.success("x");
 
@@ -252,8 +255,8 @@ class ResultTest {
         }
 
         @Test
-        @DisplayName("two failures with same error are equal")
-        void failureEquality() {
+        @DisplayName("failures with same error are equal")
+        void givenSameError_whenFailure_areEqual() {
             Result<String, String> a = Result.failure("e");
             Result<String, String> b = Result.failure("e");
 
@@ -262,7 +265,7 @@ class ResultTest {
 
         @Test
         @DisplayName("success and failure are not equal")
-        void successAndFailureAreNotEqual() {
+        void givenSuccessAndFailure_areNotEqual() {
             Result<String, String> success = Result.success("x");
             Result<String, String> failure = Result.failure("x");
 
