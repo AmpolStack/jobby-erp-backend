@@ -1,6 +1,6 @@
 package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
-import com.jobby.userservice.domain.models.Employee;
+import com.jobby.userservice.domain.models.aggregate.Employee;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoEmployeeEntity;
 import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
