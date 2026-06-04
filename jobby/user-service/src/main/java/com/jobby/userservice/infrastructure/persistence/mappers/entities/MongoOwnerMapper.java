@@ -1,8 +1,8 @@
 package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
 import com.jobby.infrastructure.security.fields.IndexedField;
-import com.jobby.userservice.domain.models.Owner;
-import com.jobby.userservice.domain.vo.Email;
+import com.jobby.userservice.domain.models.aggregate.Owner;
+import com.jobby.userservice.domain.models.vo.shared.Email;
 import com.jobby.userservice.infrastructure.persistence.mappers.common.DomainVOMapper;
 import com.jobby.userservice.infrastructure.persistence.mappers.common.SecuredFieldMapper;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoOwnerEntity;
