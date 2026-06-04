@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.autoconfiguration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobby.domain.ports.CacheService;
 import com.jobby.infrastructure.adapter.RedisCacheService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -10,6 +11,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class CacheAutoConfiguration {
@@ -33,14 +36,23 @@ public class CacheAutoConfiguration {
     public RedisTemplate<String, Object> primaryRedisTemplate(
             RedisConnectionFactory redisConnectionFactory
     ){
-        RedisTemplate<String,Object> tpl = new RedisTemplate<>();
-        tpl.setConnectionFactory(redisConnectionFactory);
-        return tpl;
+        RedisTemplate<String,Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory);
+
+        var serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+        template.afterPropertiesSet();
+
+        return template;
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public CacheService cacheService(RedisTemplate<String, Object> primaryRedisTemplate) {
-        return new RedisCacheService(primaryRedisTemplate);
+    public CacheService cacheService(RedisTemplate<String, Object> primaryRedisTemplate, ObjectMapper objectMapper) {
+        return new RedisCacheService(primaryRedisTemplate, objectMapper);
     }
 }
