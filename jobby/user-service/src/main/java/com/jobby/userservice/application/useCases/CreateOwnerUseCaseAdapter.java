@@ -8,14 +8,14 @@ import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.IdGenerator;
 import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.userservice.application.mappers.CommandMapper;
+import com.jobby.userservice.application.mappers.ResponseMapper;
 import com.jobby.userservice.domain.contract.commands.CreateOwnerCommand;
 import com.jobby.userservice.domain.contract.commands.CreateUserCommand;
-import com.jobby.userservice.application.mappers.CreateOwnerCommandMapper;
-import com.jobby.userservice.application.mappers.CreateUserCommandMapper;
-import com.jobby.userservice.application.mappers.GetOwnerQueryMapper;
 import com.jobby.userservice.domain.contract.responses.OwnerResponse;
 import com.jobby.userservice.domain.models.aggregate.Owner;
 import com.jobby.userservice.domain.models.aggregate.User;
+import com.jobby.userservice.domain.ports.in.CreateOwnerUseCase;
 import com.jobby.userservice.domain.ports.out.repositories.IdentificationTypeRepository;
 import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
@@ -25,16 +25,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class CreateOwnerUseCase implements com.jobby.userservice.domain.ports.in.CreateOwnerUseCase {
+public class CreateOwnerUseCaseAdapter implements CreateOwnerUseCase {
 
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
     private final IdentificationTypeRepository identificationTypeRepository;
     private final IdGenerator idGenerator;
-    private final GetOwnerQueryMapper queryMapper;
+    private final CommandMapper commandMapper;
+    private final ResponseMapper responseMapper;
     private final TransactionOrchestrator transaction;
-    private final CreateUserCommandMapper createUserCommandMapper;
-    private final CreateOwnerCommandMapper createOwnerCommandMapper;
 
     public Result<OwnerResponse, Error> execute(CreateOwnerCommand command) {
         var userCmd = command.user();
@@ -48,7 +47,7 @@ public class CreateOwnerUseCase implements com.jobby.userservice.domain.ports.in
                                 .add(ownerTuple.getKey())
                                 .build()
                                 .map(v ->
-                                        this.queryMapper.toGetOwnerQuery(ownerTuple.getValue(),
+                                        this.responseMapper.toResponse(ownerTuple.getValue(),
                                                 userTuple.getValue()))
                         )
                 );
@@ -71,7 +70,7 @@ public class CreateOwnerUseCase implements com.jobby.userservice.domain.ports.in
         return this.identificationTypeRepository.findById(cmd.identificationTypeId())
                 .flatMap(identificationType -> this.idGenerator.next()
                         .flatMap(userId ->
-                                this.createUserCommandMapper.toUser(cmd, userId, Role.OWNER, identificationType))
+                                this.commandMapper.toUser(cmd, userId, Role.OWNER, identificationType))
                 .flatMap(user -> this.userRepository.prepareSave(user)
                         .map(task -> Pair.of(task, user)))
                 );
@@ -79,7 +78,7 @@ public class CreateOwnerUseCase implements com.jobby.userservice.domain.ports.in
 
     private Result<Pair<PersistenceTask, Owner>,Error> prepareOwner(CreateOwnerCommand cmd, long userId){
         return this.idGenerator.next()
-                .flatMap(ownerId -> createOwnerCommandMapper.toOwner(cmd, ownerId, userId))
+                .flatMap(ownerId -> this.commandMapper.toOwner(cmd, ownerId, userId))
                 .flatMap(owner -> this.ownerRepository.prepareSave(owner)
                         .map(task -> Pair.of(task, owner)));
     }
