@@ -1,9 +1,8 @@
 package com.jobby.userservice.domain.vo;
 
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.NullityOps;
-import com.jobby.userservice.ResultAssertions;
-import com.jobby.userservice.domain.models.IdentificationType;
+import com.jobby.userservice.domain.models.reference.IdentificationType;
+import com.jobby.userservice.domain.models.vo.shared.IdentificationNumber;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -31,15 +29,13 @@ public class IdentificationNumberTests {
 
     @Nested
     class OfMethod{
-        @ParameterizedTest(name = "When number is {1}")
-        @DisplayName("Given number is null or blank, when method of is called, than returns validation failure")
-        @MethodSource("casesOfNullity")
-        void of_WhenNumberAreNullOrBlank_ShouldReturnValidationFailure(
+        @ParameterizedTest(name = "when value is {1}")
+        @DisplayName("null or blank returns failure")
+        @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithLabels")
+        void givenNullOrBlank_whenOf_returnsValidationFailure(
                 String number, String nullityType){
-            // Act
             var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
 
-            // Assert
             var expected = ValidationChain.create()
                     .validateNotBlank(number, "identification number")
                     .build();
@@ -48,12 +44,10 @@ public class IdentificationNumberTests {
         }
 
         @Test
-        @DisplayName("Given Identification type are null, when method of is called, than returns validation failure")
-        void of_WhenIdentificationTypeAreNull_ShouldReturnValidationFailure(){
-            // Act
+        @DisplayName("null type returns failure")
+        void givenNullType_whenOf_returnsValidationFailure(){
             var result = IdentificationNumber.of(VALID_NUMBER, null);
 
-            // Assert
             var expected = ValidationChain.create()
                             .validateInternalNotNull(null, "identification type")
                     .build();
@@ -61,17 +55,15 @@ public class IdentificationNumberTests {
             ResultAssertions.assertFailure(result, expected);
         }
 
-        @ParameterizedTest(name = "When number length is equals to: {1} -> [{0}]")
-        @DisplayName("Given number field is to short, when of method is called, then returns validation error")
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("too short returns failure")
         @MethodSource("casesOfToShort")
-        void of_WhenNumberIsToShort_ShouldReturnValidationFailure(
+        void givenTooShort_whenOf_returnsValidationFailure(
                 String number,
                 int charsLength
         ){
-            // Act
             var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
 
-            // Assert
             var expected = ValidationChain.create()
                     .validateGreaterOrEqualsThan(-1, IDENTIFICATION_TYPE_MIN_LENGTH, "identification number (PSP)")
                     .build();
@@ -79,17 +71,15 @@ public class IdentificationNumberTests {
             ResultAssertions.assertFailure(result, expected);
         }
 
-        @ParameterizedTest(name = "When number length is equals to: {1} -> [{0}]")
-        @DisplayName("Given number field is to big, when of method is called, then returns validation error")
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("too long returns failure")
         @MethodSource("casesOfToBig")
-        void of_WhenNumberIsToBig_ShouldReturnValidationFailure(
+        void givenTooLong_whenOf_returnsValidationFailure(
                 String number,
                 int charsLength
         ){
-            // Act
             var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
 
-            // Assert
             var expected = ValidationChain.create()
                     .validateSmallerOrEqualsThan(Integer.MAX_VALUE, IDENTIFICATION_TYPE_MAX_LENGTH, "identification number (PSP)")
                     .build();
@@ -97,13 +87,32 @@ public class IdentificationNumberTests {
             ResultAssertions.assertFailure(result, expected);
         }
 
-        private static Stream<Arguments> casesOfNullity(){
-            return NullityOps.BLANK_VALUES.stream()
-                    .flatMap(blank ->
-                            Stream.of(
-                                    Arguments.of(blank, NullityOps.getNullityName(blank))
-                            )
-                    );
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("invalid format returns failure")
+        @MethodSource("com.jobby.boundaries.IdentificationNumberBoundaries#invalidFormatCases")
+        void givenInvalidFormat_whenOf_returnsValidationFailure(String number) {
+            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
+
+            ResultAssertions.assertFailure(result);
+        }
+
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("valid returns success")
+        @MethodSource("com.jobby.boundaries.IdentificationNumberBoundaries#validCases")
+        void givenValid_whenOf_returnsSuccess(String number) {
+            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
+
+            ResultAssertions.assertSuccess(result);
+            Assertions.assertEquals(number, result.data().getNumber());
+        }
+
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("trimmable returns success")
+        @MethodSource("com.jobby.boundaries.IdentificationNumberBoundaries#trimmableCases")
+        void givenTrimmable_whenOf_returnsSuccess(String number) {
+            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
+
+            ResultAssertions.assertSuccess(result);
         }
 
         private static Stream<Arguments> casesOfToShort(){
@@ -132,54 +141,14 @@ public class IdentificationNumberTests {
                     Arguments.of("a".repeat(2000), 2000)
             );
         }
-
-        @ParameterizedTest(name = "When number is -> [{0}]")
-        @DisplayName("Given number does not match the type regex, when of is called, then returns validation failure")
-        @MethodSource("casesOfInvalidFormat")
-        void of_WhenNumberDoesNotMatchRegex_ShouldReturnValidationFailure(String number) {
-            // Act  — VALID_IDENTIFICATION_TYPE uses ^\\d+$ so letters fail
-            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
-
-            // Assert
-            ResultAssertions.assertFailure(result);
-        }
-
-        @ParameterizedTest(name = "When number length is -> {0}")
-        @DisplayName("Given number is valid, when of is called, then returns success and stores number")
-        @ValueSource(strings = {"12345678", "123456789", "1234567890"})
-        void of_WhenAllFieldsAreValid_ShouldReturnSuccess(String number) {
-            // Act
-            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
-
-            // Assert
-            ResultAssertions.assertSuccess(result);
-            Assertions.assertEquals(number, result.data().getNumber());
-        }
-
-        @ParameterizedTest(name = "When number has leading/trailing spaces -> [{0}]")
-        @DisplayName("Given number with surrounding spaces but valid core, when of is called, then returns success")
-        @ValueSource(strings = {"  12345678  ", "  1234567890", "12345678  "})
-        void of_WhenNumberHasSurroundingSpaces_ShouldReturnSuccess(String number) {
-            var result = IdentificationNumber.of(number, VALID_IDENTIFICATION_TYPE);
-
-            ResultAssertions.assertSuccess(result);
-        }
-
-        private static Stream<Arguments> casesOfInvalidFormat(){
-            return Stream.of(
-                    Arguments.of("abcdefgh"),
-                    Arguments.of("1234567a"),
-                    Arguments.of("a234567890")
-            );
-        }
     }
 
     @Nested
     class OnMethod {
-        @ParameterizedTest(name = "When number -> [{0}]")
-        @DisplayName("on() always sets the raw number without validation")
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("always sets value")
         @MethodSource("casesOfOn")
-        void on_AlwaysSetsNumber(String number) {
+        void givenAnyValue_whenOn_returnsValue(String number) {
             var result = IdentificationNumber.on(number);
 
             Assertions.assertSame(number, result.getNumber());
