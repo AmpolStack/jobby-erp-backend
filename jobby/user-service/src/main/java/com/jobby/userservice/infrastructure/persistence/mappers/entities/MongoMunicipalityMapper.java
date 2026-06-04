@@ -1,6 +1,6 @@
 package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 
-import com.jobby.userservice.domain.models.Municipality;
+import com.jobby.userservice.domain.models.reference.Municipality;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoMunicipalityEntity;
 import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
