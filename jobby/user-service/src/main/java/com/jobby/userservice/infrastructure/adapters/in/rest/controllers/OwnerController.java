@@ -1,14 +1,16 @@
-package com.jobby.userservice.infrastructure.adapters.in;
+package com.jobby.userservice.infrastructure.adapters.in.rest.controllers;
 
 import com.jobby.domain.ports.SafeResultValidator;
 import com.jobby.infrastructure.response.definition.HttpResponseProcessor;
-import com.jobby.userservice.application.useCases.CreateOwnerUseCase;
-import com.jobby.userservice.application.useCases.GetOwnerByIdUseCase;
-import com.jobby.userservice.application.useCases.RemoveRecoveryEmailUseCase;
-import com.jobby.userservice.application.useCases.UpdateRecoveryEmailUseCase;
-import com.jobby.userservice.infrastructure.adapters.in.mappers.OwnerHttpMapper;
-import com.jobby.userservice.infrastructure.adapters.in.requests.CreateOwnerRequest;
-import com.jobby.userservice.infrastructure.adapters.in.requests.UpdateRecoveryEmailRequest;
+import com.jobby.userservice.application.useCases.CreateOwnerUseCaseAdapter;
+import com.jobby.userservice.application.useCases.GetOwnerByIdUseCaseAdapter;
+import com.jobby.userservice.application.useCases.RemoveRecoveryEmailUseCaseAdapter;
+import com.jobby.userservice.application.useCases.UpdateRecoveryEmailUseCaseAdapter;
+import com.jobby.userservice.domain.contract.commands.RemoveRecoveryEmailCommand;
+import com.jobby.userservice.domain.contract.queries.GetOwnerByIdQuery;
+import com.jobby.userservice.infrastructure.adapters.in.rest.mappers.OwnerHttpMapper;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.CreateOwnerRequest;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateRecoveryEmailRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class OwnerController {
 
-    private final CreateOwnerUseCase createOwner;
-    private final GetOwnerByIdUseCase getOwnerById;
-    private final UpdateRecoveryEmailUseCase updateAlternativeEmail;
-    private final RemoveRecoveryEmailUseCase removeRecoveryEmail;
+    private final CreateOwnerUseCaseAdapter createOwner;
+    private final GetOwnerByIdUseCaseAdapter getOwnerById;
+    private final UpdateRecoveryEmailUseCaseAdapter updateAlternativeEmail;
+    private final RemoveRecoveryEmailUseCaseAdapter removeRecoveryEmail;
 
     private final HttpResponseProcessor response;
     private final OwnerHttpMapper ownerHttpMapper;
@@ -53,7 +55,7 @@ public class OwnerController {
 
     @DeleteMapping("/{ownerId}/recovery-email")
     public ResponseEntity<?> removeAlternativeEmail(@PathVariable long ownerId){
-        var finalResponse = this.removeRecoveryEmail.execute(ownerId)
+        var finalResponse = this.removeRecoveryEmail.execute(new RemoveRecoveryEmailCommand(ownerId))
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
         return this.response.map(finalResponse);
@@ -67,7 +69,7 @@ public class OwnerController {
 
     @GetMapping("/{ownerId}")
     public ResponseEntity<?> getById(@PathVariable long ownerId){
-        var finalResponse = this.getOwnerById.execute(ownerId)
+        var finalResponse = this.getOwnerById.execute(new GetOwnerByIdQuery(ownerId))
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
         return this.response.map(finalResponse);
