@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.commands;
+package com.jobby.userservice.domain.contract.commands;
 
 import java.util.Map;
 
