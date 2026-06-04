@@ -1,8 +1,8 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.boundaries.NameBoundaries;
 import com.jobby.domain.mobility.validator.ValidationChain;
-import com.jobby.userservice.NullityOps;
-import com.jobby.userservice.ResultAssertions;
+import com.jobby.userservice.domain.models.vo.shared.Name;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,29 +10,24 @@ import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import java.util.stream.Stream;
 
 public class NameTests {
     private static final String VALID_NAME = "Rodrigo Torres";
     private static final String VALID_FIELD_NAME = "Field";
-    private static final int MIN_LENGTH = 2;
-    private static final int MAX_LENGTH = 150;
 
     @Nested
     class OfMethod {
 
-        @ParameterizedTest(name = "When name is {1}")
-        @DisplayName("Given fields are null or blank, when of method is called, then returns validation error")
-        @MethodSource("casesOfNullity")
-        void of_WhenNameFieldAreNullOrBlank_ShouldReturnsValidationFailure(
+        @ParameterizedTest(name = "when value is {1}")
+        @DisplayName("null or blank returns failure")
+        @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithLabels")
+        void givenNullOrBlank_whenOf_returnsValidationFailure(
                 String name,
                 String nullityType
         ) {
-            // Act
             var result = Name.of(name, VALID_FIELD_NAME);
 
-            // Asserts
             var expectedResult = ValidationChain
                     .create()
                     .validateNotBlank(name, VALID_FIELD_NAME)
@@ -41,108 +36,69 @@ public class NameTests {
             ResultAssertions.assertFailure(result, expectedResult);
         }
 
-        @ParameterizedTest(name = "When name length is equals to: {1} -> [{0}]")
-        @DisplayName("Given name field are to short, when of method is called, then returns validation error")
-        @MethodSource("casesOfToShort")
-        void of_WhenNameFieldAreToShort_ShouldReturnsValidationFailure(
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("too short returns failure")
+        @MethodSource("com.jobby.boundaries.NameBoundaries#tooShortCases")
+        void givenTooShort_whenOf_returnsValidationFailure(
                 String name,
                 int charsLength
         ) {
             var result = Name.of(name, VALID_FIELD_NAME);
 
-            // Asserts
             var expectedResult = ValidationChain.create()
-                    .validateGreaterOrEqualsThan(charsLength, MIN_LENGTH, VALID_FIELD_NAME)
+                    .validateGreaterOrEqualsThan(charsLength, NameBoundaries.MIN_LENGTH, VALID_FIELD_NAME)
                     .build();
 
             ResultAssertions.assertFailure(result, expectedResult);
         }
 
-        @ParameterizedTest(name = "When name length is equals to: {1}")
-        @DisplayName("Given name field are to big, when of method is called, then returns validation error")
-        @MethodSource("casesOfToBig")
-        void of_WhenNameFieldAreToBig_ShouldReturnsValidationFailure(
+        @ParameterizedTest(name = "when length is {0}")
+        @DisplayName("too long returns failure")
+        @MethodSource("com.jobby.boundaries.NameBoundaries#tooLongCases")
+        void givenTooLong_whenOf_returnsValidationFailure(
                 int charsLength
         ){
-            //Arrange
             var name = "a".repeat(charsLength);
 
-            // Act
             var result = Name.of(name, VALID_FIELD_NAME);
 
-            // Asserts
             var expectedResult = ValidationChain.create()
-                    .validateSmallerOrEqualsThan(name.length(), MAX_LENGTH, VALID_FIELD_NAME)
+                    .validateSmallerOrEqualsThan(name.length(), NameBoundaries.MAX_LENGTH, VALID_FIELD_NAME)
                     .build();
 
             ResultAssertions.assertFailure(result, expectedResult);
         }
 
-        @ParameterizedTest(name = "When name length is -> {0}")
-        @DisplayName("When all are correct, then returns success")
-        @ValueSource(ints = {2, 5, 10, 20, 50, 75, 100, 115, 125, 150})
-        void of_WhenNameFieldAreCorrect_ShouldReturnsSuccess(
+        @ParameterizedTest(name = "when length is {0}")
+        @DisplayName("valid length returns success")
+        @MethodSource("com.jobby.boundaries.NameBoundaries#validLengthCases")
+        void givenValidLength_whenOf_returnsSuccess(
                 int nameLength
         ){
-            // Arrange
             var name = "a".repeat(nameLength);
 
-            // Act
             var result = Name.of(name, VALID_FIELD_NAME);
-            // Asserts
             ResultAssertions.assertSuccess(result);
             Assertions.assertSame(name, result.data().getValue());
         }
 
         @RepeatedTest(50)
-        @DisplayName("When all are correct, then set all fields always")
-        void of_WhenNameFieldAreCorrect_AlwaysSetValues(){
-            // Act
+        @DisplayName("valid always returns success")
+        void givenValid_whenOf_returnsSuccess(){
             var result = Name.of(VALID_NAME, VALID_FIELD_NAME);
-            // Asserts
             ResultAssertions.assertSuccess(result);
-        }
-
-        private static Stream<Arguments> casesOfNullity(){
-            return NullityOps.BLANK_VALUES.stream()
-                    .flatMap(blank -> Stream.of(
-                            Arguments.of(blank, NullityOps.getNullityName(blank))
-                    ));
-        }
-
-        private static Stream<Arguments> casesOfToShort(){
-            return Stream.of(
-                    Arguments.of("a", 1),
-                    Arguments.of("    a     ", 1),
-                    Arguments.of("    a", 1),
-                    Arguments.of("a    ", 1)
-            );
-        }
-
-        private static Stream<Arguments> casesOfToBig(){
-            return Stream.of(
-                    Arguments.of( 151),
-                    Arguments.of( 200),
-                    Arguments.of( 250),
-                    Arguments.of( 500),
-                    Arguments.of( 1000),
-                    Arguments.of( 2000),
-                    Arguments.of( 5000)
-            );
         }
     }
 
     @Nested
     class OnMethod {
-        @ParameterizedTest(name = "When name equals -> {0}")
-        @DisplayName("When all are correct, then set all fields always")
+        @ParameterizedTest(name = "when value is {0}")
+        @DisplayName("always sets value")
         @MethodSource("casesOfOn")
-        void on_AlwaysSetValuesAndReturnsSuccess(
+        void givenAnyValue_whenOn_returnsValue(
                 String name
         ){
-            // Act
             var result = Name.on(name);
-            // Asserts
             Assertions.assertSame(name, result.getValue());
         }
 
