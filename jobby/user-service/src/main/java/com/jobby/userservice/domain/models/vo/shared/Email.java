@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.vo;
+package com.jobby.userservice.domain.models.vo.shared;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
@@ -12,7 +12,7 @@ import lombok.*;
 public class Email {
     private String email;
     private static final String REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-    private static final String FIELD_NAME = "recoveryEmail address";
+    private static final String FIELD_NAME = "Email address";
 
     public static Result<Email, Error> of(String email){
         return ValidationChain.create()
@@ -21,7 +21,7 @@ public class Email {
                 .flatMap(v -> ValidationChain.create()
                         .validateIf(!email.matches(REGEX),
                                 () -> Result.failure(ErrorType.VALIDATION_ERROR,
-                                        new Field("recoveryEmail", "The recoveryEmail address is invalid.")))
+                                        new Field("Email", "Email address is invalid.")))
                         .build())
                 .map(v -> new Email(email));
     }
