@@ -1,4 +1,4 @@
-package com.jobby.userservice.infrastructure.adapters.in.responses;
+package com.jobby.userservice.infrastructure.adapters.in.rest.responses;
 
 public record ContactResponse(
         String name,
