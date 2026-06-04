@@ -1,6 +1,6 @@
 package com.jobby.userservice.domain.models;
 
-import com.jobby.userservice.ResultAssertions;
+import com.jobby.userservice.domain.models.aggregate.Owner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,8 +21,8 @@ public class OwnerTest {
 
         @ParameterizedTest
         @MethodSource("casesOfCreate")
-        @DisplayName("Given all fields are correct, when create method is calling, returns success")
-        void create_WhenAllIsCorrect_ShouldReturnsSuccess(
+        @DisplayName("all correct returns success")
+        void givenAllCorrect_whenCreate_returnsSuccess(
                 long id,
                 long userId,
                 Map<String, String> secureParameters
@@ -56,8 +56,8 @@ public class OwnerTest {
     class ReconstructMethod{
         @ParameterizedTest
         @MethodSource("casesOfReconstruct")
-        @DisplayName("When reconstruct method is calling, returns success and always sets all fields")
-        void create_WhenAllIsCorrect_ShouldReturnsSuccess(
+        @DisplayName("all correct sets all fields")
+        void givenAllCorrect_whenReconstruct_setsAllFields(
                 long id,
                 long userId,
                 String alternativeEmail,
