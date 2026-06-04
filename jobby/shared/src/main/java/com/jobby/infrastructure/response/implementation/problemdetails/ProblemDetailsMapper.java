@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class ProblemDetailsMapper {
+
     private static final String BASE_URI = "https://api.jobby.com/problems/";
     private static final Map<ErrorType, String> TITLES = new EnumMap<>(ErrorType.class);
     private static final Map<ErrorType, String> DETAILS = new EnumMap<>(ErrorType.class);
@@ -31,7 +32,7 @@ public class ProblemDetailsMapper {
         DETAILS.put(ErrorType.NOT_FOUND, "The requested resource could not be found");
     }
 
-    public static ResponseEntity<ProblemDetails> toProblemDetails(Error error) {
+    public static ResponseEntity<ProblemDetails> toProblemDetails(Error error, String supportId) {
         ErrorType errorType = error.getCode();
         HttpStatus status = ErrorTypeHttpCollection.toHttpStatus(errorType);
 
@@ -44,6 +45,7 @@ public class ProblemDetailsMapper {
                 .detail(DETAILS.getOrDefault(errorType, "An unexpected error occurred"))
                 .errors(sanitizedError.getFields())
                 .addContext("errorCode", errorType.name())
+//                .addContext("supportId", supportId)
                 .build();
 
         return ResponseEntity.status(status)
