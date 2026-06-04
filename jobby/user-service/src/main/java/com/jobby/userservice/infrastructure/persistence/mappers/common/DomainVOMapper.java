@@ -1,6 +1,6 @@
 package com.jobby.userservice.infrastructure.persistence.mappers.common;
 
-import com.jobby.userservice.domain.vo.*;
+import com.jobby.userservice.domain.models.vo.shared.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
