@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("Validation Chain Tests")
 class ValidationChainTest {
 
     // ── Core chain behavior ──────────────────────────────────────────
