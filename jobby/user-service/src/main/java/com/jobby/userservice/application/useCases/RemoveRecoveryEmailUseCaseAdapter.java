@@ -6,7 +6,6 @@ import com.jobby.domain.ports.TransactionOrchestrator;
 import com.jobby.userservice.application.mappers.ResponseMapper;
 import com.jobby.userservice.domain.contract.commands.RemoveRecoveryEmailCommand;
 import com.jobby.userservice.domain.contract.responses.OwnerResponse;
-import com.jobby.userservice.domain.models.aggregate.Owner;
 import com.jobby.userservice.domain.ports.in.RemoveRecoveryEmailUseCase;
 import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
@@ -24,13 +23,12 @@ public class RemoveRecoveryEmailUseCaseAdapter implements RemoveRecoveryEmailUse
 
     public Result<OwnerResponse, Error> execute(RemoveRecoveryEmailCommand command){
         return this.ownerRepository.getById(command.ownerId())
-                .peek(Owner::removeRecoveryEmail)
-                .flatMap(owner -> this.ownerRepository.prepareSave(owner)
-                        .flatMap(task -> this.transaction.write()
-                                .add(task)
-                                .build())
-                        .flatMap(v -> this.userRepository.getById(owner.getUserId()))
-                        .map(user -> this.responseMapper.toResponse(owner, user))
-                );
+                .flatMap(owner -> this.userRepository.getById(owner.getUserId())
+                        .flatMap(user -> owner.removeRecoveryEmail()
+                                .flatMap(v -> this.ownerRepository.prepareSave(owner))
+                                .flatMap(task -> this.transaction.write()
+                                        .add(task)
+                                        .build())
+                                .map(v -> this.responseMapper.toResponse(owner, user))));
     }
 }
