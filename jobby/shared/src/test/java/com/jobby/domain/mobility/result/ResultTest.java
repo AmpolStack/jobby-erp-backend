@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@DisplayName("Result Pattern Tests")
 class ResultTest {
 
     // ── Factory methods ──────────────────────────────────────────────
-
     @Nested
     @DisplayName("Factory: success()")
     class SuccessFactory {
