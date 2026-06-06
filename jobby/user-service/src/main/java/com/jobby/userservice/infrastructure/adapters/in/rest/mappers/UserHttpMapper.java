@@ -9,15 +9,15 @@ import com.jobby.userservice.domain.contract.commands.RequestEmailChangeCommand;
 import com.jobby.userservice.domain.contract.commands.UpdateIProfileImageCommand;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ChangeEmailRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ConfirmEmailRequest;
-import com.jobby.userservice.infrastructure.adapters.in.rest.responses.UserResponse;
-import org.mapstruct.Mapper;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-@Mapper(componentModel = "spring")
-public interface UserHttpMapper {
-    default Result<UpdateIProfileImageCommand, Error> toCommand(long id, MultipartFile file){
+@Component
+public class UserHttpMapper {
+
+    public Result<UpdateIProfileImageCommand, Error> toCommand(long id, MultipartFile file){
         try {
             var response = new UpdateIProfileImageCommand(id,
                     file.getOriginalFilename(),
@@ -30,12 +30,12 @@ public interface UserHttpMapper {
         }
     }
 
-    default RequestEmailChangeCommand toCommand(ChangeEmailRequest request){
+    public RequestEmailChangeCommand toCommand(ChangeEmailRequest request){
         if(request == null) return null;
         return new RequestEmailChangeCommand(request.userId(), request.email());
     }
 
-    default ConfirmEmailChangeCommand toCommand(ConfirmEmailRequest request){
+    public ConfirmEmailChangeCommand toCommand(ConfirmEmailRequest request){
         if(request == null) return null;
         return new ConfirmEmailChangeCommand(request.userId(), request.code());
     }
