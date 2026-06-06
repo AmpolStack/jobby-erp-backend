@@ -14,7 +14,7 @@ public class ResultHttpMapper implements HttpResponseProcessor {
 
         if(result.isFailure()){
             var statusCode = ErrorTypeHttpCollection.toHttpStatus(result.error().getCode());
-            var error = ErrorTypeHttpCollection.toResponseError(result.error());
+            var error = ErrorTypeHttpCollection.toSanitizedError(result.error());
             return ResponseEntity.status(statusCode).body(Result.failure(error));
         }
 
@@ -26,5 +26,4 @@ public class ResultHttpMapper implements HttpResponseProcessor {
     {
         return map(result, HttpStatus.OK);
     }
-
 }
