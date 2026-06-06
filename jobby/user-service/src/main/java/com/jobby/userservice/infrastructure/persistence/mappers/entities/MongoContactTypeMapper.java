@@ -3,7 +3,6 @@ package com.jobby.userservice.infrastructure.persistence.mappers.entities;
 import com.jobby.userservice.domain.models.reference.ContactType;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoContactTypeEntity;
 import org.mapstruct.Mapper;
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MongoContactTypeMapper {
@@ -16,8 +15,4 @@ public interface MongoContactTypeMapper {
                 entity.getExpression(),
                 entity.getVisualInstructions());
     }
-
-    List<ContactType> toDomain(List<MongoContactTypeEntity> entity);
-
-    MongoContactTypeEntity toEntity(ContactType domain);
 }
