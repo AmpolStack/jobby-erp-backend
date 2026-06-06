@@ -2,14 +2,15 @@ package com.jobby.userservice.infrastructure.adapters.in.rest.mappers;
 
 import com.jobby.userservice.domain.contract.commands.CreateOwnerCommand;
 import com.jobby.userservice.domain.contract.commands.CreateUserCommand;
-import com.jobby.userservice.domain.contract.commands.RequestEmailChangeCommand;
 import com.jobby.userservice.domain.contract.commands.UpdateRecoveryEmailCommand;
 import com.jobby.userservice.domain.contract.responses.ContactResponse;
 import com.jobby.userservice.domain.contract.responses.OwnerResponse;
 import com.jobby.userservice.domain.contract.responses.UserResponse;
-import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ChangeEmailRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.CreateOwnerRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateRecoveryEmailRequest;
+import com.jobby.userservice.infrastructure.adapters.in.rest.responses.ContactHttpResponse;
+import com.jobby.userservice.infrastructure.adapters.in.rest.responses.OwnerHttpResponse;
+import com.jobby.userservice.infrastructure.adapters.in.rest.responses.UserHttpResponse;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
@@ -41,11 +42,9 @@ public interface OwnerHttpMapper {
         return new UpdateRecoveryEmailCommand(request.id(), request.recoveryEmail());
     }
 
+    ContactHttpResponse toContactResponse(ContactResponse query);
 
-    com.jobby.userservice.infrastructure.adapters.in.rest.responses.ContactResponse toContactResponse(ContactResponse query);
+    UserHttpResponse toUserResponse(UserResponse query);
 
-    com.jobby.userservice.infrastructure.adapters.in.rest.responses.UserResponse toUserResponse(UserResponse query);
-
-    com.jobby.userservice.infrastructure.adapters.in.rest.responses.OwnerResponse toOwnerResponse(OwnerResponse query);
+    OwnerHttpResponse toOwnerResponse(OwnerResponse query);
 }
-
