@@ -25,7 +25,7 @@ public class SecurityOrchestrator {
     }
 
     public Result<byte[], Error> index(String data){
-        if(data == null) return null;
+        if(data == null) return Result.success(null);
         return this.macService.generateMac(data);
     }
 
