@@ -23,7 +23,7 @@ public class RemoveProfileImageUseCaseAdapter implements RemoveProfileImageUseCa
     public Result<UserResponse, Error> execute(RemoveProfileImageCommand command){
         return this.userRepository.getById(command.userId())
                 .flatMap(user -> user.removeProfileImage()
-                        .flatMap(v -> this.fileStorageService.removeProfileImage(user.getProfileImageUrl()))
+                        .flatMap(this.fileStorageService::removeProfileImage)
                         .flatMap(v -> this.userRepository.prepareSave(user))
                         .flatMap(userTask -> this.transaction.write()
                                 .add(userTask)
