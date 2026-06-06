@@ -97,7 +97,7 @@ public class User {
         return Result.success();
     }
 
-    public Result<Void, Error> removeProfileImage(){
+    public Result<ImageUrl, Error> removeProfileImage(){
         return ValidationChain.create()
                 .validateIf(this.getProfileImageUrl() == null
                                 || this.getProfileImageUrl().getValue() == null,
@@ -105,11 +105,30 @@ public class User {
                         new Field("Profile image",
                                 "The user does not have a profile picture")) )
                 .build()
-                .peek(v -> {
+                .map(v -> {
+                    var oldUrl = this.profileImageUrl;
                     this.profileImageUrl = null;
                     this.modifiedAt = Instant.now();
+                    return oldUrl;
                 });
     }
 
 
+    public Result<ImageReplaceResult, Error> replaceImage(ImageUrl newImageUrl) {
+        return ValidationChain.create()
+                .validateNotNull(newImageUrl, "user profile image url")
+                .build()
+                .map(v -> {
+                    var oldImageUrl = this.profileImageUrl;
+                    this.profileImageUrl = newImageUrl;
+                    this.modifiedAt = Instant.now();
+                    return new ImageReplaceResult(oldImageUrl);
+                });
+    }
+
+    public record ImageReplaceResult(ImageUrl oldImageUrl) {
+        public boolean hasOldImage() {
+            return oldImageUrl != null && oldImageUrl.getValue() != null;
+        }
+    }
 }
