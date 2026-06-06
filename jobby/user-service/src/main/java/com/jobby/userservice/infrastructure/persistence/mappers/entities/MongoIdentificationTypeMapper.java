@@ -1,8 +1,8 @@
 package com.jobby.userservice.infrastructure.persistence.mappers.entities;
+
 import com.jobby.userservice.domain.models.reference.IdentificationType;
 import com.jobby.userservice.infrastructure.persistence.entities.MongoIdentificationTypeEntity;
 import org.mapstruct.Mapper;
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MongoIdentificationTypeMapper {
@@ -18,8 +18,4 @@ public interface MongoIdentificationTypeMapper {
                 entity.getAbbreviation(),
                 entity.getAllowCharacters());
     }
-
-    List<IdentificationType> toDomain(List<MongoIdentificationTypeEntity> entity);
-
-    MongoIdentificationTypeEntity toEntity(IdentificationType domain);
 }
