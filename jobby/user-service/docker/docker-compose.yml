@@ -1,0 +1,28 @@
+name: jobby.user-services
+services:
+
+  mongo:
+    image: mongo:8
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - ./sources/mongo/mongo-init-script.js:/docker-entrypoint-initdb.d/mongo-init-script.js:ro
+      - mongo_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok",
+              "--username", "${MONGO_INITDB_ROOT_USERNAME}",
+              "--password", "${MONGO_INITDB_ROOT_PASSWORD}",
+              "--authenticationDatabase", "admin" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mongo_data:
