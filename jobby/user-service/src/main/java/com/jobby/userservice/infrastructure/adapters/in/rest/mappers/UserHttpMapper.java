@@ -4,11 +4,10 @@ import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.userservice.domain.contract.commands.ConfirmEmailChangeCommand;
-import com.jobby.userservice.domain.contract.commands.RequestEmailChangeCommand;
-import com.jobby.userservice.domain.contract.commands.UpdateIProfileImageCommand;
+import com.jobby.userservice.application.contracts.commands.*;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ChangeEmailRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.ConfirmEmailRequest;
+import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateUserRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,8 +34,19 @@ public class UserHttpMapper {
         return new RequestEmailChangeCommand(request.userId(), request.email());
     }
 
+    public UpdateUserStatusCommand toCommand(long userId, boolean isActive){
+        return new UpdateUserStatusCommand(isActive, userId);
+    }
+
     public ConfirmEmailChangeCommand toCommand(ConfirmEmailRequest request){
         if(request == null) return null;
         return new ConfirmEmailChangeCommand(request.userId(), request.code());
+    }
+
+    public UpdateUserCommand toCommand(long id, UpdateUserRequest request){
+        if(request == null) return null;
+        return new UpdateUserCommand(id, request.identificationTypeId(),
+                request.identificationNumber(), request.firstName(),
+                request.lastName(), request.phone());
     }
 }

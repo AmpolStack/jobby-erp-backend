@@ -1,11 +1,11 @@
 package com.jobby.userservice.infrastructure.adapters.in.rest.mappers;
 
-import com.jobby.userservice.domain.contract.commands.CreateOwnerCommand;
-import com.jobby.userservice.domain.contract.commands.CreateUserCommand;
-import com.jobby.userservice.domain.contract.commands.UpdateRecoveryEmailCommand;
-import com.jobby.userservice.domain.contract.responses.ContactResponse;
-import com.jobby.userservice.domain.contract.responses.OwnerResponse;
-import com.jobby.userservice.domain.contract.responses.UserResponse;
+import com.jobby.userservice.application.contracts.commands.CreateOwnerCommand;
+import com.jobby.userservice.application.contracts.commands.CreateUserCommand;
+import com.jobby.userservice.application.contracts.commands.UpdateRecoveryEmailCommand;
+import com.jobby.userservice.application.responses.ContactResponse;
+import com.jobby.userservice.application.responses.OwnerResponse;
+import com.jobby.userservice.application.responses.UserResponse;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.CreateOwnerRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateRecoveryEmailRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.responses.ContactHttpResponse;
@@ -21,8 +21,6 @@ public interface OwnerHttpMapper {
         var u = request.user();
         return new CreateUserCommand(
                 u.identificationTypeId(),
-                request.organizationId(),
-                u.sectionalId(),
                 u.firstName(),
                 u.lastName(),
                 u.identificationNumber(),
