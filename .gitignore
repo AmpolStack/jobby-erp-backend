@@ -41,3 +41,6 @@ build/
 .idea
 application-secrets.yml
 .env
+.obsidian/
+
+temp
