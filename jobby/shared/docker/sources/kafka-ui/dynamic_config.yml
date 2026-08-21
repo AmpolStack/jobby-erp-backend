@@ -1,0 +1,11 @@
+kafka:
+  clusters:
+    - name: "jobby-cluster"
+      bootstrapServers: "first-broker:9093,second-broker:9094,third-broker:9095"
+      schemaRegistry: "http://schema-registry:8080/apis/ccompat/v7"
+      properties:
+        schema.registry.url: "http://schema-registry:8080/apis/ccompat/v7"
+      # Uncomment cuando Debezium esté habilitado:
+      # kafkaConnect:
+      #   - name: debezium
+      #     address: http://debezium-server:8083
