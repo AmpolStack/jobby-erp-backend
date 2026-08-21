@@ -5,8 +5,12 @@ import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
+import com.jobby.domain.ports.FileStorageService;
 import com.jobby.infrastructure.configurations.FileStorageConfig;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -16,12 +20,14 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import java.net.URL;
 import java.time.Duration;
 
+@Slf4j
 @AllArgsConstructor
-public class FileStorageServiceAdapter {
+public class FileStorageServiceAdapter implements FileStorageService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final FileStorageConfig config;
+    private final ObservationRegistry observationRegistry;
 
     public Result<String, Error> upload(byte[] content,
                                         String mimeType,
@@ -32,6 +38,9 @@ public class FileStorageServiceAdapter {
                 .validateInternalNotBlank(key, "uploaded file key")
                 .build()
                 .flatMap(v -> {
+                    var observation = Observation.createNotStarted("filestorage.upload", observationRegistry)
+                            .lowCardinalityKeyValue("bucket", config.getBucket())
+                            .start();
 
                     try{
                         this.s3Client.putObject(
@@ -42,25 +51,33 @@ public class FileStorageServiceAdapter {
                                         .build(),
                                 RequestBody.fromBytes(content)
                         );
+                        observation.stop();
+                        var responseUrl = this.buildUrl(key);
+                        return Result.success(responseUrl);
                     }
                     catch (NoSuchBucketException e){
+                        observation.error(e);
+                        log.error("[ITS_CONFIGURATION_ERROR] S3 bucket missing: bucket={}", this.config.getBucket(), e);
                         return Result.failure(ErrorType.ITS_CONFIGURATION_ERROR,
                                 new Field("file storage config",
-                                        "The bucket " + this.config.getBucket() + " is not exist " + e));
+                                        e.getClass().getSimpleName() + ": bucket " + this.config.getBucket() + " does not exist"));
                     }
                     catch (S3Exception e){
+                        observation.error(e);
+                        var detail = e.awsErrorDetails();
+                        var reason = detail != null ? detail.errorMessage() : e.getMessage();
+                        log.error("[ITS_UNKNOWN_ERROR] S3 upload failed: key={}, status={}", key, e.statusCode(), e);
                         return Result.failure(ErrorType.ITS_UNKNOWN_ERROR,
                                 new Field("file storage",
-                                        "Error in storage: " + e));
+                                        e.getClass().getSimpleName() + ": " + reason));
                     }
                     catch (SdkClientException e){
+                        observation.error(e);
+                        log.error("[ITS_EXTERNAL_SERVICE_FAILURE] S3 connection failed: endpoint={}", this.config.getEndpoint(), e);
                         return Result.failure(ErrorType.ITS_EXTERNAL_SERVICE_FAILURE,
                                 new Field("file storage",
-                                        "It could not connect to the file server: " + e));
+                                        e.getClass().getSimpleName() + ": could not connect to file server"));
                     }
-
-                    var responseUrl = this.buildUrl(key);
-                    return Result.success(responseUrl);
                 });
     }
 
@@ -69,6 +86,8 @@ public class FileStorageServiceAdapter {
                 .validateInternalNotBlank(key, "deletion file key")
                 .build()
                 .flatMap(v -> {
+                    var observation = Observation.createNotStarted("filestorage.get-signed", observationRegistry).start();
+
                     try {
                         var getObjectRequest = GetObjectRequest.builder()
                                 .bucket(this.config.getBucket())
@@ -81,13 +100,15 @@ public class FileStorageServiceAdapter {
                                 .build();
 
                         var presignedRequest = this.s3Presigner.presignGetObject(presignRequest);
-
+                        observation.stop();
                         return Result.success(presignedRequest.url());
 
                     } catch (S3Exception e) {
+                        observation.error(e);
+                        log.warn("[ITS_INVALID_STATE] S3 presigned URL failed: key={}", key, e);
                         return Result.failure(ErrorType.ITS_INVALID_STATE,
                                 new Field("file",
-                                        "Error in file deletion: " + e));
+                                        e.getClass().getSimpleName() + ": error generating presigned URL"));
                     }
                 });
     }
@@ -97,6 +118,9 @@ public class FileStorageServiceAdapter {
                 .validateNotBlank(url, "image url")
                 .build()
                 .flatMap(v -> {
+                    var observation = Observation.createNotStarted("filestorage.delete", observationRegistry)
+                            .lowCardinalityKeyValue("bucket", config.getBucket())
+                            .start();
 
                     var key = this.extractKeyFromUrl(url);
 
@@ -107,22 +131,31 @@ public class FileStorageServiceAdapter {
                                 .key(key)
                                 .build());
 
+                        observation.stop();
                         return Result.success();
                     }
                     catch (NoSuchBucketException e){
+                        observation.error(e);
+                        log.error("[ITS_CONFIGURATION_ERROR] S3 bucket missing on delete: bucket={}", this.config.getBucket(), e);
                         return Result.failure(ErrorType.ITS_CONFIGURATION_ERROR,
                                 new Field("file storage config",
-                                        "The bucket " + this.config.getBucket() + " is not exist " + e));
+                                        e.getClass().getSimpleName() + ": bucket " + this.config.getBucket() + " does not exist"));
                     }
                     catch (S3Exception e){
+                        observation.error(e);
+                        var detail = e.awsErrorDetails();
+                        var reason = detail != null ? detail.errorMessage() : e.getMessage();
+                        log.error("[ITS_UNKNOWN_ERROR] S3 delete failed: key={}", key, e);
                         return Result.failure(ErrorType.ITS_UNKNOWN_ERROR,
                                 new Field("file storage",
-                                        "Error in storage: " + e));
+                                        e.getClass().getSimpleName() + ": " + reason));
                     }
                     catch (SdkClientException e){
+                        observation.error(e);
+                        log.error("[ITS_EXTERNAL_SERVICE_FAILURE] S3 connection failed on delete: endpoint={}", this.config.getEndpoint(), e);
                         return Result.failure(ErrorType.ITS_EXTERNAL_SERVICE_FAILURE,
                                 new Field("file storage",
-                                        "It could not connect to the file server: " + e));
+                                        e.getClass().getSimpleName() + ": could not connect to file server"));
 
                     }}
                 );

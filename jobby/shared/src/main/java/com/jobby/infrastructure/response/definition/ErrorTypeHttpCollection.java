@@ -67,7 +67,7 @@ public class ErrorTypeHttpCollection {
 
         if (isInternalValidationError(type)) {
 
-            log.warn("[INTERNAL VALIDATION ERROR] type={} fields={}",
+            log.error("[INTERNAL VALIDATION ERROR] type={} fields={}",
                     type, Arrays.toString(error.getFields()));
 
             return new Error(type, new Field[]{

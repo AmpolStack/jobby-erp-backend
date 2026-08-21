@@ -2,21 +2,23 @@ package com.jobby.infrastructure.adapter;
 
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
-import com.jobby.infrastructure.configurations.IdConfig;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.IdGenerator;
-import org.springframework.stereotype.Component;
-import java.time.Instant;
+import com.jobby.infrastructure.configurations.IdConfig;
+import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Slf4j
 public class SnowflakeIdGenerator implements IdGenerator {
+
     private final Snowflake snowflake;
+    private final IdConfig idConfig;
 
     public SnowflakeIdGenerator(IdConfig config) {
         this.snowflake = IdUtil.getSnowflake(config.getWorkerId(), config.getDatacenterId());
+        this.idConfig = config;
     }
 
     @Override
@@ -26,8 +28,9 @@ public class SnowflakeIdGenerator implements IdGenerator {
             return Result.success(id);
         }
         catch (Exception ex){
+            log.error("[ITS_INVALID_STATE] Snowflake ID generation failed: workerId={}, datacenterId={}", idConfig.getWorkerId(), idConfig.getDatacenterId(), ex);
             return Result.failure(ErrorType.ITS_INVALID_STATE, new Field("snowflake id",
-                    "An error occurred in the configuration or time parameters of the SnowflakeGenerator at: " + Instant.now().toString()));
+                    ex.getClass().getSimpleName() + ": Snowflake generator failed"));
         }
     }
 }
