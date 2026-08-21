@@ -5,10 +5,10 @@ import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.domain.ports.in.CommandHandler;
 import com.jobby.userservice.application.mappers.ResponseMapper;
-import com.jobby.userservice.domain.contract.commands.UpdateRecoveryEmailCommand;
-import com.jobby.userservice.domain.contract.responses.OwnerResponse;
-import com.jobby.userservice.domain.ports.in.UpdateRecoveryEmailUseCase;
+import com.jobby.userservice.application.contracts.commands.UpdateRecoveryEmailCommand;
+import com.jobby.userservice.application.responses.OwnerResponse;
 import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
 import com.jobby.userservice.domain.models.aggregate.Owner;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class UpdateRecoveryEmailUseCaseAdapter implements UpdateRecoveryEmailUseCase {
+public class UpdateRecoveryEmailUseCaseAdapter implements CommandHandler<UpdateRecoveryEmailCommand, OwnerResponse> {
 
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;

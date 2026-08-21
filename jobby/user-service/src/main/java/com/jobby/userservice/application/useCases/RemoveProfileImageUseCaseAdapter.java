@@ -3,10 +3,10 @@ package com.jobby.userservice.application.useCases;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.domain.ports.in.CommandHandler;
 import com.jobby.userservice.application.mappers.ResponseMapper;
-import com.jobby.userservice.domain.contract.commands.RemoveProfileImageCommand;
-import com.jobby.userservice.domain.contract.responses.UserResponse;
-import com.jobby.userservice.domain.ports.in.RemoveProfileImageUseCase;
+import com.jobby.userservice.application.contracts.commands.RemoveProfileImageCommand;
+import com.jobby.userservice.application.responses.UserResponse;
 import com.jobby.userservice.domain.ports.out.services.StorageService;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class RemoveProfileImageUseCaseAdapter implements RemoveProfileImageUseCase {
+public class RemoveProfileImageUseCaseAdapter implements CommandHandler<RemoveProfileImageCommand, UserResponse> {
     private final StorageService fileStorageService;
     private final ResponseMapper responseMapper;
     private final UserRepository userRepository;

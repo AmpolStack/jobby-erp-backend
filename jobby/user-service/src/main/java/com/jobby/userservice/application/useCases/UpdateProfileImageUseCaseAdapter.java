@@ -5,15 +5,15 @@ import com.jobby.domain.mobility.error.ErrorType;
 import com.jobby.domain.mobility.error.Field;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.domain.ports.in.CommandHandler;
 import com.jobby.userservice.application.mappers.ResponseMapper;
-import com.jobby.userservice.domain.contract.commands.UpdateIProfileImageCommand;
-import com.jobby.userservice.domain.contract.responses.UserResponse;
+import com.jobby.userservice.application.contracts.commands.UpdateIProfileImageCommand;
+import com.jobby.userservice.application.responses.UserResponse;
 import com.jobby.userservice.domain.models.aggregate.User;
 import com.jobby.userservice.domain.models.enums.Role;
 import com.jobby.userservice.domain.models.vo.ephemeral.ImageStorageContext;
 import com.jobby.userservice.domain.models.vo.ephemeral.ProfileImage;
-import com.jobby.userservice.domain.ports.in.ProfileImageContextResolver;
-import com.jobby.userservice.domain.ports.in.UpdateProfileImageUseCase;
+import com.jobby.userservice.application.common.ProfileImageContextResolver;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
 import com.jobby.userservice.domain.ports.out.services.StorageService;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class UpdateProfileImageUseCaseAdapter implements UpdateProfileImageUseCase {
+public class UpdateProfileImageUseCaseAdapter implements CommandHandler<UpdateIProfileImageCommand, UserResponse> {
 
     private final StorageService fileStorageService;
     private final UserRepository userRepository;
@@ -64,8 +64,8 @@ public class UpdateProfileImageUseCaseAdapter implements UpdateProfileImageUseCa
         return resolver.resolve(command, user);
     }
 
-    private Result<UserResponse, Error> uploadAndUpdate(
-            UpdateIProfileImageCommand command, User user, ImageStorageContext context) {
+    private Result<UserResponse, Error> uploadAndUpdate(UpdateIProfileImageCommand command,
+                                                        User user, ImageStorageContext context) {
         return ProfileImage.of(command.content(), command.contentType(), context)
                 .flatMap(this.fileStorageService::changeProfileImage)
                 .flatMap(user::replaceImage)
