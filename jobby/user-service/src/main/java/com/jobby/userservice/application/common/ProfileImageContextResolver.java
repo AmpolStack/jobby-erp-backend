@@ -1,8 +1,8 @@
-package com.jobby.userservice.domain.ports.in;
+package com.jobby.userservice.application.common;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
-import com.jobby.userservice.domain.contract.commands.UpdateIProfileImageCommand;
+import com.jobby.userservice.application.contracts.commands.UpdateIProfileImageCommand;
 import com.jobby.userservice.domain.models.aggregate.User;
 import com.jobby.userservice.domain.models.enums.Role;
 import com.jobby.userservice.domain.models.vo.ephemeral.ImageStorageContext;

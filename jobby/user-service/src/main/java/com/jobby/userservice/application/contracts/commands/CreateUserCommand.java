@@ -1,12 +1,11 @@
-package com.jobby.userservice.domain.contract.commands;
+package com.jobby.userservice.application.contracts.commands;
 
+import com.jobby.domain.ports.in.Command;
 
 public record CreateUserCommand(int identificationTypeId,
-                                long organizationId,
-                                long sectionalId,
                                 String firstName,
                                 String lastName,
                                 String identificationNumber,
                                 String email,
-                                String phone) {
+                                String phone) implements Command {
 }

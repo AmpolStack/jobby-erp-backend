@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.contract.responses;
+package com.jobby.userservice.application.responses;
 
 
 public record ContactResponse(String name,

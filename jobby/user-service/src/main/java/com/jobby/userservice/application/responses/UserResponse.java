@@ -1,4 +1,4 @@
-package com.jobby.userservice.domain.contract.responses;
+package com.jobby.userservice.application.responses;
 
 import com.jobby.userservice.domain.models.enums.Role;
 
