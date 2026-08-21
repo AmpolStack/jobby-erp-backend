@@ -1,5 +1,6 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
 import com.jobby.boundaries.NameBoundaries;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.vo.shared.Name;
@@ -98,7 +99,7 @@ public class NameTests {
         void givenAnyValue_whenOn_returnsValue(
                 String name
         ){
-            var result = Name.on(name);
+            var result = Name.reconstruct(name);
             Assertions.assertSame(name, result.getValue());
         }
 

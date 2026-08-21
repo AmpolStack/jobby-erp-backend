@@ -1,5 +1,6 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.vo.shared.Phone;
 import org.junit.jupiter.api.Assertions;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import java.util.stream.Stream;
 
 public class PhoneTests {
@@ -58,7 +58,7 @@ public class PhoneTests {
         @DisplayName("always sets value")
         @MethodSource("casesOfOn")
         void givenAnyValue_whenOn_returnsValue(String number) {
-            var result = Phone.on(number);
+            var result = Phone.reconstruct(number);
 
             Assertions.assertSame(number, result.getNumber());
         }
@@ -80,7 +80,7 @@ public class PhoneTests {
         @DisplayName("returns E.164 format")
         @MethodSource("com.jobby.boundaries.PhoneBoundaries#e164Cases")
         void givenNumber_whenGetNumberAsE164_returnsE164Format(String number, String expected) {
-            var phone = Phone.on(number);
+            var phone = Phone.reconstruct(number);
 
             Assertions.assertEquals(expected, phone.getNumberAsE164());
         }
@@ -89,7 +89,7 @@ public class PhoneTests {
         @DisplayName("returns display format")
         @MethodSource("com.jobby.boundaries.PhoneBoundaries#displayCases")
         void givenNumber_whenGetNumberAsDisplay_returnsDisplayFormat(String number, String expected) {
-            var phone = Phone.on(number);
+            var phone = Phone.reconstruct(number);
 
             Assertions.assertEquals(expected, phone.getNumberAsDisplay());
         }

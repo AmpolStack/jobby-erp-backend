@@ -1,6 +1,8 @@
 package com.jobby.userservice.domain.models;
 
+import com.jobby.ResultAssertions;
 import com.jobby.userservice.domain.models.aggregate.Owner;
+import com.jobby.userservice.domain.models.vo.shared.Email;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -68,7 +70,7 @@ public class OwnerTest {
             // Act
             var result = Owner.reconstruct(id,
                     userId,
-                    alternativeEmail,
+                    Email.reconstruct(alternativeEmail),
                     secureParameters,
                     createdAt,
                     modifiedAt);

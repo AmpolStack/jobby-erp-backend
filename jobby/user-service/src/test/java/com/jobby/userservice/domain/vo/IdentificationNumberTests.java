@@ -1,5 +1,6 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.reference.IdentificationType;
 import com.jobby.userservice.domain.models.vo.shared.IdentificationNumber;
@@ -149,7 +150,7 @@ public class IdentificationNumberTests {
         @DisplayName("always sets value")
         @MethodSource("casesOfOn")
         void givenAnyValue_whenOn_returnsValue(String number) {
-            var result = IdentificationNumber.on(number);
+            var result = IdentificationNumber.reconstruct(number);
 
             Assertions.assertSame(number, result.getNumber());
         }
