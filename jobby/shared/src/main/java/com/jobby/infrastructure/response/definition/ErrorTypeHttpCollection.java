@@ -50,25 +50,38 @@ public class ErrorTypeHttpCollection {
         return ERROR_HTTP_MAP.getOrDefault(errorType, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static Error toResponseError(Error error){
-        var type = error.getCode().toString();
+    public static boolean isUserError(ErrorType type) {
+        return !type.name().startsWith("ITN") && !type.name().startsWith("ITS");
+    }
 
-        if(type.startsWith("ITN")){
+    public static boolean isInternalValidationError(ErrorType type) {
+        return type.name().startsWith("ITN");
+    }
 
-            log.warn("[INTERNAL VALIDATION ERROR] type={} fields={}",
+    public static boolean isInternalSystemError(ErrorType type) {
+        return type.name().startsWith("ITS");
+    }
+
+    public static Error toSanitizedError(Error error){
+        var type = error.getCode();
+
+        if (isInternalValidationError(type)) {
+
+            log.error("[INTERNAL VALIDATION ERROR] type={} fields={}",
                     type, Arrays.toString(error.getFields()));
 
-            return new Error(error.getCode(), new Field[]{
-                    new Field("Internal Validation Error", "Validation error in the entered data")
+            return new Error(type, new Field[]{
+                    new Field("internal", "An unexpected validation error occurred. This is a system issue. Please contact support.")
             });
         }
-        if(type.startsWith("ITS")){
+
+        if (isInternalSystemError(type)) {
 
             log.warn("[INTERNAL SYSTEM ERROR] type={} fields={}",
                     type, Arrays.toString(error.getFields()));
 
-            return new Error(error.getCode(), new Field[]{
-                    new Field("Internal System Error", "An internal error has occurred. Please try again later.")
+            return new Error(type, new Field[]{
+                    new Field("system", "A system error occurred. Please try again later or contact support.")
             });
         }
 

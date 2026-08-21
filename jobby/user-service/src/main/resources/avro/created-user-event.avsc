@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "UserCreatedSchema",
+  "namespace": "com.jobby.userservice.events",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": "bytes"
+    },
+    {
+      "name": "email",
+      "type": "bytes"
+    },
+    {
+      "name": "createdAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    }
+  ]
+}

@@ -22,12 +22,6 @@ public class MongoUserEntity {
     @Field("_id")
     private Long id;
 
-    @Field("organization_id")
-    private Long organizationId;
-
-    @Field("sectional_id")
-    private Long sectionalId;
-
     @Field("contacts")
     private Set<@NotNull MongoContactEntity> contacts;
 
@@ -43,8 +37,7 @@ public class MongoUserEntity {
     private ProtectedField lastName;
 
     @Field("role")
-    @NotBlank
-    @Size(max = 10, message = "It cannot have more than 10 characters")
+    @NotNull
     private Role role;
 
     @Field("is_active")

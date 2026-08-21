@@ -1,5 +1,6 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.vo.shared.ImageUrl;
 import org.junit.jupiter.api.Assertions;
@@ -72,7 +73,7 @@ public class ImageUrlTests {
         @DisplayName("always sets value")
         @MethodSource("casesOfOn")
         void givenAnyValue_whenOn_returnsValue(String value) {
-            var result = ImageUrl.on(value);
+            var result = ImageUrl.reconstruct(value);
 
             Assertions.assertSame(value, result.getValue());
         }

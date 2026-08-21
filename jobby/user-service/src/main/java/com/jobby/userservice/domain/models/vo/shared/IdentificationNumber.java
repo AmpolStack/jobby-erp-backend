@@ -11,6 +11,7 @@ import java.util.Set;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 public class IdentificationNumber {
     private String number;
     private static final String NUMBER_FIELD_NAME = "identification number";

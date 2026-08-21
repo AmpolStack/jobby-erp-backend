@@ -1,5 +1,6 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.vo.shared.Email;
 import org.junit.jupiter.api.Assertions;
@@ -58,7 +59,7 @@ public class EmailTests {
         @DisplayName("always sets value")
         @MethodSource("casesOfOn")
         void givenAnyValue_whenOn_returnsValue(String email) {
-            var result = Email.on(email);
+            var result = Email.reconstruct(email);
 
             Assertions.assertSame(email, result.getEmail());
         }

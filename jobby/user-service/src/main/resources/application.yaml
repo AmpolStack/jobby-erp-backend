@@ -1,16 +1,23 @@
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 management:
-  loki:
-    url: http://localhost:3100
   zipkin:
     tracing:
       endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0 # on dev 100%, on prod 0.1
   endpoints:
     web:
       exposure:
         include: health, metrics, prometheus
-  tracing:
-    sampling:
-      probability: 1.0 # on dev 100%, on prod 0.1
+  metrics:
+    tags:
+      application: ${spring.application.name}
 spring:
   application:
     name: user-service
@@ -32,11 +39,39 @@ spring:
     properties:
       mail.smtp.auth: false
       mail.smtp.starttls.enable: false
+  kafka:
+    bootstrap-servers:
+      - localhost:9093
+      - localhost:9094
+      - localhost:9095
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.apicurio.registry.serde.avro.AvroKafkaDeserializer
+      properties:
+        apicurio.registry.url: http://localhost:8091
+        apicurio.registry.use-specific-avro-reader: true
+        apicurio.registry.headers.enabled: false
+        apicurio.registry.use-id: contentId
+        apicurio.registry.id-handler: io.apicurio.registry.serde.Legacy4ByteIdHandler
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.jobby.infrastructure.serde.DualAvroKafkaSerializer
+      properties:
+        apicurio.registry.url: http://localhost:8091
+        apicurio.registry.auto-register: true
+        apicurio.registry.serde.avro.auto-register: true
+        apicurio.registry.headers.enabled: true
+        apicurio.registry.use-id: contentId
+        apicurio.registry.id-handler: io.apicurio.registry.serde.Legacy4ByteIdHandler
+
 app:
+  logging:
+    loki-url: http://localhost:3100/loki/api/v1/push
   file-storage:
     setup:
       access-key: admin
-      secret-key: adminpassword
+      secret-key: RT4Emdg@5aW6
       endpoint: http://localhost:9001
     sources:
       endpoint: http://localhost:9001

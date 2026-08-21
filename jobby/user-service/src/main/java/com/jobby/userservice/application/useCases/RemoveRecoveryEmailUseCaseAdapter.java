@@ -3,11 +3,10 @@ package com.jobby.userservice.application.useCases;
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.TransactionOrchestrator;
+import com.jobby.domain.ports.in.CommandHandler;
 import com.jobby.userservice.application.mappers.ResponseMapper;
-import com.jobby.userservice.domain.contract.commands.RemoveRecoveryEmailCommand;
-import com.jobby.userservice.domain.contract.responses.OwnerResponse;
-import com.jobby.userservice.domain.models.aggregate.Owner;
-import com.jobby.userservice.domain.ports.in.RemoveRecoveryEmailUseCase;
+import com.jobby.userservice.application.contracts.commands.RemoveRecoveryEmailCommand;
+import com.jobby.userservice.application.responses.OwnerResponse;
 import com.jobby.userservice.domain.ports.out.repositories.OwnerRepository;
 import com.jobby.userservice.domain.ports.out.repositories.UserRepository;
 import lombok.AllArgsConstructor;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class RemoveRecoveryEmailUseCaseAdapter implements RemoveRecoveryEmailUseCase {
+public class RemoveRecoveryEmailUseCaseAdapter implements CommandHandler<RemoveRecoveryEmailCommand, OwnerResponse> {
 
     private final OwnerRepository ownerRepository;
     private final UserRepository userRepository;
@@ -24,13 +23,12 @@ public class RemoveRecoveryEmailUseCaseAdapter implements RemoveRecoveryEmailUse
 
     public Result<OwnerResponse, Error> execute(RemoveRecoveryEmailCommand command){
         return this.ownerRepository.getById(command.ownerId())
-                .peek(Owner::removeRecoveryEmail)
-                .flatMap(owner -> this.ownerRepository.prepareSave(owner)
-                        .flatMap(task -> this.transaction.write()
-                                .add(task)
-                                .build())
-                        .flatMap(v -> this.userRepository.getById(owner.getUserId()))
-                        .map(user -> this.responseMapper.toResponse(owner, user))
-                );
+                .flatMap(owner -> this.userRepository.getById(owner.getUserId())
+                        .flatMap(user -> owner.removeRecoveryEmail()
+                                .flatMap(v -> this.ownerRepository.prepareSave(owner))
+                                .flatMap(task -> this.transaction.write()
+                                        .add(task)
+                                        .build())
+                                .map(v -> this.responseMapper.toResponse(owner, user))));
     }
 }

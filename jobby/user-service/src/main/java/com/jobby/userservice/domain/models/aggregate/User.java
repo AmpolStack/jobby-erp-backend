@@ -15,6 +15,7 @@ import java.util.Set;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 public class User {
     private Long id;
     private Set<Contact> contacts;
@@ -77,6 +78,25 @@ public class User {
     }
 
 
+    public Result<Void, Error> update(Name firstName, Name lastName,
+                                      IdentificationNumber identificationNumber,
+                                      int identificationTypeId, Phone phone){
+        return ValidationChain.create()
+                .validateNotNull(firstName, "first name")
+                .validateNotNull(lastName, "last name")
+                .validateNotNull(identificationNumber, "identification number")
+                .validateNotNull(phone, "phone number")
+                .build()
+                .peek(v -> {
+                    this.firstName = firstName;
+                    this.lastName = lastName;
+                    this.identificationNumber = identificationNumber;
+                    this.identificationTypeId = identificationTypeId;
+                    this.phone = phone;
+                    this.modifiedAt = Instant.now();
+                });
+    }
+
     public Result<Void, Error> updateImageUrl(ImageUrl imageUrl){
         return ValidationChain.create()
                 .validateNotNull(imageUrl, "user profile image url")
@@ -97,7 +117,7 @@ public class User {
         return Result.success();
     }
 
-    public Result<Void, Error> removeProfileImage(){
+    public Result<ImageUrl, Error> removeProfileImage(){
         return ValidationChain.create()
                 .validateIf(this.getProfileImageUrl() == null
                                 || this.getProfileImageUrl().getValue() == null,
@@ -105,11 +125,38 @@ public class User {
                         new Field("Profile image",
                                 "The user does not have a profile picture")) )
                 .build()
-                .peek(v -> {
+                .map(v -> {
+                    var oldUrl = this.profileImageUrl;
                     this.profileImageUrl = null;
                     this.modifiedAt = Instant.now();
+                    return oldUrl;
                 });
     }
 
 
+    public Result<ImageReplaceResult, Error> replaceImage(ImageUrl newImageUrl) {
+        return ValidationChain.create()
+                .validateNotNull(newImageUrl, "user profile image url")
+                .build()
+                .map(v -> {
+                    var oldImageUrl = this.profileImageUrl;
+                    this.profileImageUrl = newImageUrl;
+                    this.modifiedAt = Instant.now();
+                    return new ImageReplaceResult(oldImageUrl);
+                });
+    }
+
+    public void updateStatus(boolean status){
+        if(this.isActive == status){
+            return;
+        }
+        this.isActive = status;
+        this.modifiedAt = Instant.now();
+    }
+
+    public record ImageReplaceResult(ImageUrl oldImageUrl) {
+        public boolean hasOldImage() {
+            return oldImageUrl != null && oldImageUrl.getValue() != null;
+        }
+    }
 }

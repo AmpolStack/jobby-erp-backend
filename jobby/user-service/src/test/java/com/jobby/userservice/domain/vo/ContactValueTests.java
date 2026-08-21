@@ -1,5 +1,7 @@
 package com.jobby.userservice.domain.vo;
 
+import com.jobby.ResultAssertions;
+import com.jobby.boundaries.NullityBoundaries;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.reference.ContactType;
 import com.jobby.userservice.domain.models.vo.shared.ContactValue;
@@ -35,7 +37,7 @@ public class ContactValueTests {
 
         @ParameterizedTest(name = "When value is {1}")
         @DisplayName("Given value is null or blank, when of is called, then returns validation failure")
-        @MethodSource("casesOfNullity")
+        @MethodSource("com.jobby.boundaries.NullityBoundaries#getWithLabels")
         void of_WhenValueIsNullOrBlank_ShouldReturnValidationFailure(String value,
                                                               String nullityType) {
             var result = ContactValue.of(value, GENERIC_TYPE);
@@ -112,13 +114,6 @@ public class ContactValueTests {
             ResultAssertions.assertSuccess(result);
         }
 
-        private static Stream<Arguments> casesOfNullity() {
-            return NullityOps.BLANK_VALUES.stream()
-                    .flatMap(blank -> Stream.of(
-                            Arguments.of(blank, NullityOps.getNullityName(blank))
-                    ));
-        }
-
         private static Stream<Arguments> casesOfInvalidPhoneFormat() {
             return Stream.of(
                     Arguments.of("1001234567"),   // starts with 1, not 3
@@ -144,7 +139,7 @@ public class ContactValueTests {
         @DisplayName("on() always sets the raw value without validation")
         @MethodSource("casesOfOn")
         void on_AlwaysSetsValue(String value) {
-            var result = ContactValue.on(value);
+            var result = ContactValue.reconstruct(value);
 
             Assertions.assertSame(value, result.getValue());
         }

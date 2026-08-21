@@ -4,7 +4,6 @@ import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.mobility.validator.ValidationChain;
 import com.jobby.userservice.domain.models.vo.shared.Email;
-import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,13 +15,14 @@ import java.util.Map;
 public class Owner {
     private Long id;
     private Long userId;
-    private Email recoveryEmail;
+    private Email alternativeEmail;
     private Map<String, String> secureParameters;
     private Instant createdAt;
     private Instant modifiedAt;
 
     public static Result<Owner, Error> create(long id, long userId,
                                               Map<String, String> secureParameters) {
+
         var owner = new Owner(id,
                 userId,
                 null,
@@ -33,12 +33,12 @@ public class Owner {
         return Result.success(owner);
     }
 
-    public Result<Void, Error> updateRecoveryEmail(Email recoveryEmail) {
+    public Result<Void, Error> updateRecoveryEmail(Email alternativeEmail) {
         return ValidationChain.create()
-                .validateNotNull(recoveryEmail, "owner recovery recoveryEmail")
+                .validateNotNull(alternativeEmail, "owner recovery AlternativeEmail")
                 .build()
                 .peek(v -> {
-                    this.recoveryEmail= recoveryEmail;
+                    this.alternativeEmail = alternativeEmail;
                     this.modifiedAt = Instant.now();
                 });
     }
@@ -46,7 +46,7 @@ public class Owner {
     public Result<Void, Error> removeRecoveryEmail() {
         return ValidationChain.create().build()
                 .map(v -> {
-                    this.recoveryEmail = null;
+                    this.alternativeEmail = null;
                     this.modifiedAt = Instant.now();
                     return null;
                 });

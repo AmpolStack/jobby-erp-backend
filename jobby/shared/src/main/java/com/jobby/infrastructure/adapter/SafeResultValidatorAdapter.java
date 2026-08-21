@@ -7,16 +7,14 @@ import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.SafeResultValidator;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import lombok.AllArgsConstructor;
 
 import java.util.Set;
 
+@AllArgsConstructor
 public class SafeResultValidatorAdapter implements SafeResultValidator {
 
     private final Validator validator;
-
-    public SafeResultValidatorAdapter(Validator validator) {
-        this.validator = validator;
-    }
 
     @Override
     public <T> Result<Void, Error> validate(T entity) {

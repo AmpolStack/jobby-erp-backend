@@ -2,6 +2,7 @@ package com.jobby.userservice.infrastructure.adapters.out.services;
 
 import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
+import com.jobby.domain.ports.FileStorageService;
 import com.jobby.userservice.domain.ports.out.services.StorageService;
 import com.jobby.userservice.domain.models.vo.shared.ImageUrl;
 import com.jobby.userservice.domain.models.vo.ephemeral.ProfileImage;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class StorageServiceAdapter implements StorageService {
 
-    private final com.jobby.infrastructure.adapter.FileStorageServiceAdapter fileStorageService;
+    private final FileStorageService fileStorageService;
 
     @Override
     public Result<ImageUrl, Error> changeProfileImage(ProfileImage image) {

@@ -3,6 +3,7 @@ package com.jobby.infrastructure.autoconfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobby.domain.ports.CacheService;
 import com.jobby.infrastructure.adapter.RedisCacheService;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +53,7 @@ public class CacheAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CacheService cacheService(RedisTemplate<String, Object> primaryRedisTemplate, ObjectMapper objectMapper) {
-        return new RedisCacheService(primaryRedisTemplate, objectMapper);
+    public CacheService cacheService(RedisTemplate<String, Object> primaryRedisTemplate, ObjectMapper objectMapper, ObservationRegistry observationRegistry) {
+        return new RedisCacheService(primaryRedisTemplate, objectMapper, observationRegistry);
     }
 }

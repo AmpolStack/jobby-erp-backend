@@ -18,6 +18,4 @@ public abstract class MongoMunicipalityMapper {
                 entity.getName(),
                 entity.getDaneCode());
     }
-
-    public abstract MongoMunicipalityEntity toEntity(Municipality domain);
 }

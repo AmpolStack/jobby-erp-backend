@@ -1,13 +1,12 @@
 package com.jobby.userservice.infrastructure.adapters.in.rest.controllers;
 
 import com.jobby.domain.ports.SafeResultValidator;
+import com.jobby.domain.ports.in.CommandBus;
+import com.jobby.domain.ports.in.QueryBus;
 import com.jobby.infrastructure.response.definition.HttpResponseProcessor;
-import com.jobby.userservice.application.useCases.CreateOwnerUseCaseAdapter;
-import com.jobby.userservice.application.useCases.GetOwnerByIdUseCaseAdapter;
-import com.jobby.userservice.application.useCases.RemoveRecoveryEmailUseCaseAdapter;
-import com.jobby.userservice.application.useCases.UpdateRecoveryEmailUseCaseAdapter;
-import com.jobby.userservice.domain.contract.commands.RemoveRecoveryEmailCommand;
-import com.jobby.userservice.domain.contract.queries.GetOwnerByIdQuery;
+import com.jobby.userservice.application.contracts.commands.RemoveRecoveryEmailCommand;
+import com.jobby.userservice.application.contracts.queries.GetOwnerByIdQuery;
+import com.jobby.userservice.application.responses.OwnerResponse;
 import com.jobby.userservice.infrastructure.adapters.in.rest.mappers.OwnerHttpMapper;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.CreateOwnerRequest;
 import com.jobby.userservice.infrastructure.adapters.in.rest.requests.UpdateRecoveryEmailRequest;
@@ -20,11 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class OwnerController {
 
-    private final CreateOwnerUseCaseAdapter createOwner;
-    private final GetOwnerByIdUseCaseAdapter getOwnerById;
-    private final UpdateRecoveryEmailUseCaseAdapter updateAlternativeEmail;
-    private final RemoveRecoveryEmailUseCaseAdapter removeRecoveryEmail;
-
+    private final CommandBus commandBus;
+    private final QueryBus queryBus;
     private final HttpResponseProcessor response;
     private final OwnerHttpMapper ownerHttpMapper;
     private final SafeResultValidator validator;
@@ -34,7 +30,7 @@ public class OwnerController {
         var finalResponse = this.validator.validate(request)
                 .flatMap(v -> {
                     var command = this.ownerHttpMapper.toOwnerCommand(request);
-                    return this.createOwner.execute(command);
+                    return this.commandBus.<OwnerResponse>dispatch(command);
                 })
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
@@ -46,7 +42,7 @@ public class OwnerController {
         var finalResponse = this.validator.validate(request)
                 .flatMap(v -> {
                     var command = this.ownerHttpMapper.toUpdateRecoveryCommand(request);
-                    return this.updateAlternativeEmail.execute(command);
+                    return this.commandBus.<OwnerResponse>dispatch(command);
                 })
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
@@ -55,7 +51,7 @@ public class OwnerController {
 
     @DeleteMapping("/{ownerId}/recovery-email")
     public ResponseEntity<?> removeAlternativeEmail(@PathVariable long ownerId){
-        var finalResponse = this.removeRecoveryEmail.execute(new RemoveRecoveryEmailCommand(ownerId))
+        var finalResponse = this.commandBus.<OwnerResponse>dispatch(new RemoveRecoveryEmailCommand(ownerId))
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
         return this.response.map(finalResponse);
@@ -69,7 +65,7 @@ public class OwnerController {
 
     @GetMapping("/{ownerId}")
     public ResponseEntity<?> getById(@PathVariable long ownerId){
-        var finalResponse = this.getOwnerById.execute(new GetOwnerByIdQuery(ownerId))
+        var finalResponse = this.queryBus.<OwnerResponse>dispatch(new GetOwnerByIdQuery(ownerId))
                 .map(this.ownerHttpMapper::toOwnerResponse);
 
         return this.response.map(finalResponse);

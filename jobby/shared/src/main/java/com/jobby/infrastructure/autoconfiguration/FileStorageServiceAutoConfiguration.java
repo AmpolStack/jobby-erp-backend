@@ -1,8 +1,10 @@
 package com.jobby.infrastructure.autoconfiguration;
 
+import com.jobby.domain.ports.FileStorageService;
 import com.jobby.infrastructure.adapter.FileStorageServiceAdapter;
 import com.jobby.infrastructure.configurations.FileStorageConfig;
 import com.jobby.infrastructure.configurations.FileStorageSetupConfig;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -70,12 +72,13 @@ public class FileStorageServiceAutoConfiguration {
 
     @ConditionalOnMissingBean
     @Bean
-    public FileStorageServiceAdapter fileStorageServiceAdapter(
+    public FileStorageService fileStorageServiceAdapter(
             S3Client client,
             S3Presigner presigner,
-            FileStorageConfig config
+            FileStorageConfig config,
+            ObservationRegistry observationRegistry
     ){
-        return new FileStorageServiceAdapter(client, presigner, config);
+        return new FileStorageServiceAdapter(client, presigner, config, observationRegistry);
     }
 
 }

@@ -29,7 +29,7 @@ public abstract class MongoOwnerMapper {
                 entity.getModifiedAt());
     }
 
-    @Mapping(target = "recoveryEmail", source = "recoveryEmail", qualifiedByName = "fromEmailToIndexedField")
+    @Mapping(target = "recoveryEmail", source = "alternativeEmail", qualifiedByName = "fromEmailToIndexedField")
     public abstract MongoOwnerEntity toEntity(Owner domain);
 
     @Named("fromEmailToIndexedField")

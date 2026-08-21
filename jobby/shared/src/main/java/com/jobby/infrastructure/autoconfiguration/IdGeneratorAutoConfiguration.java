@@ -1,5 +1,6 @@
 package com.jobby.infrastructure.autoconfiguration;
 
+import cn.hutool.core.lang.Snowflake;
 import com.jobby.infrastructure.configurations.IdConfig;
 import com.jobby.infrastructure.adapter.SnowflakeIdGenerator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

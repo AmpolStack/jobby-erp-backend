@@ -112,23 +112,37 @@ The platform is composed of independently deployable services. Each service owns
 | **API Gateway** | Single entry point for routing, rate limiting, and auth enforcement |
 | **Event-driven communication** | Async messaging for non-critical flows (notifications, analytics ingestion) |
 
-[aquí tu descripción de los servicios individuales una vez los tengas definidos]
+**Services**
+
+| Service | Status | Responsibility |
+|---|---|---|
+| `user-service` | ✅ In development | Identity and access: users, owners (business accounts), employees, security parameters, contact channels |
+| `billing-service` | 🔜 Planned | Electronic document lifecycle: issuance, DIAN validation, CUFE/CUDE, contingency mode |
+| `auth-service` | 🔜 Planned | OAuth 2.0 token issuance, permissions, session management |
+| `notification-service` | 🔜 Planned | Email/SMS orchestration driven by domain events |
+| `api-gateway` | 🔜 Planned | Routing, rate limiting, auth enforcement |
+
+The full delivery plan lives in [`docs/project/roadmap.md`](docs/project/roadmap.md).
 
 ---
 
 ## 🛠️ Tech Stack
 
-**Backend services** use **Spring Boot** as the default framework. Services with specific asynchronous, reactive, or performance-critical requirements use **Quarkus** or **Micronaut** where their runtime characteristics provide a meaningful advantage.
+All services are built with **Java 21** and **Spring Boot**, sharing a common library (`shared`) that provides auto-configured buses, security, observability, and testing utilities.
 
 | Layer | Technology |
 |---|---|
-| Default service framework | Spring Boot |
-| Async / reactive services | Quarkus · Micronaut |
-| Analytics & ETL | Python |
-| [mensajería] | [aquí tu elección: Kafka, RabbitMQ, etc.] |
-| [base de datos operacional] | [aquí tu elección: PostgreSQL, etc.] |
-| [infraestructura] | [Docker · Kubernetes · etc.] |
-| API specification | OpenAPI 3.x |
+| Language / Runtime | Java 21 |
+| Service framework | Spring Boot 3.5.x |
+| Messaging | Apache Kafka 4.0 (KRaft mode) · Apicurio Registry 3.x (kafkasql storage, Confluent-compatible wire format) · Avro schemas |
+| Operational database | MongoDB 8 (strict JSON Schema validation, HMAC-indexed encrypted fields) |
+| Cache | Redis 7.4 (LRU eviction) |
+| File storage | RustFS (S3-compatible, presigned URLs) |
+| Observability | Micrometer Observation · Prometheus · Loki · Zipkin · Grafana |
+| Infrastructure | Docker Compose (dev), Kubernetes-ready design |
+| API specification | OpenAPI 3.x via springdoc |
+
+Every technology choice is backed by an [ADR](docs/architecture/adr/README.md) — see the index for the full list of 39 documented decisions.
 
 ---
 
@@ -148,26 +162,39 @@ Full compliance documentation is available in [`docs/compliance/`](docs/complian
 
 ## 🚀 Getting Started
 
-[coming soon]
+Requirements: **JDK 21+**, **Docker** (with Compose v2) and **Maven 3.9+** (or use the included wrapper).
 
-In the meantime, see [`docs/guides/local-setup.md`](docs/guides/local-setup.md) for the most up-to-date setup instructions.
+```bash
+# 1. Start the full infrastructure (Kafka, Apicurio, Redis, RustFS, Mailpit, observability)
+cd jobby/shared/docker && docker compose -f docker-compose.yml up -d
+
+# 2. Build the monorepo
+cd ../../jobby && ./mvnw clean install
+
+# 3. Run the first service
+cd user-service && ../mvnw spring-boot:run
+```
+
+Then open `http://localhost:8080/swagger-ui.html` and `http://localhost:3000` (Grafana).
+
+Full instructions, ports table and troubleshooting: [`docs/guides/local-setup.md`](docs/guides/local-setup.md).
 
 ---
 
 ## 🗺️ Roadmap
 
-See the full [open issues](https://github.com/[tu-usuario]/jobby-erp/issues) and [project board](https://github.com/[tu-usuario]/jobby-erp/projects) for detailed progress.
+Track progress in the [open issues](https://github.com/AmpolStack/jobby-erp-backend/issues) and follow the delivery plan in [`docs/project/roadmap.md`](docs/project/roadmap.md).
 
 ---
 
 ## 📚 Technical Documentation
 
-One of the explicit goals of this project is to serve as a learning resource. The [`docs/`](docs/) directory contains:
+One of the explicit goals of this project is to serve as a learning resource. The [`docs/`](docs/README.md) directory contains:
 
-- **Architecture Decision Records (ADRs)** — Every significant architectural choice is documented with its context, the options considered, the decision made, and its consequences. See [`docs/architecture/adr/`](docs/architecture/adr/).
-- **Pattern guides** — In-depth explanations of each pattern applied (CQRS, Outbox, Result Pattern, etc.) in the context of this specific codebase.
-- **Service documentation** — Per-service documentation covering responsibilities, API contracts, data models, and event schemas.
-- **A technical article series** — Published progressively as the project evolves. See [`docs/articles/`](docs/articles/).
+- **Architecture Decision Records (ADRs)** — 39 decisions documented with context, options considered, decision, and consequences. See [`docs/architecture/adr/`](docs/architecture/adr/README.md).
+- **Pattern guides** — In-depth explanations of each pattern applied (Hexagonal + DDD, Result, CQRS buses, Domain Events, Outbox, Searchable Encryption) in the context of this specific codebase. See [`docs/architecture/patterns/`](docs/architecture/patterns/README.md).
+- **Project definition** — Vision, scope, glossary, principles and roadmap. See [`docs/project/`](docs/project/).
+- **A technical article series** — Published progressively as the project evolves, with a full content strategy. See [`docs/articles/`](docs/articles/README.md).
 
 ---
 
@@ -201,7 +228,7 @@ This project is and will remain open source. See the [Objectives](#-objectives) 
 
 ## 📬 Contact
 
-Have questions, ideas, or experience with Colombian invoicing systems? Open a [Discussion](https://github.com/[tu-usuario]/jobby-erp/discussions) — that is the right place for it.
+Have questions, ideas, or experience with Colombian invoicing systems? Open a [Discussion](https://github.com/AmpolStack/jobby-erp-backend/discussions) — that is the right place for it.
 
 ---
 ---
@@ -227,12 +254,27 @@ Jobby ERP aborda estos problemas desde cero con una **arquitectura de microservi
 
 ### Inicio rápido
 
-[Pronto]
+Requisitos: **JDK 21+**, **Docker** (con Compose v2) y **Maven 3.9+** (o el wrapper incluido).
+
+```bash
+# 1. Levantar toda la infraestructura (Kafka, Apicurio, Redis, RustFS, Mailpit, observabilidad)
+cd jobby/shared/docker && docker compose -f docker-compose.yml up -d
+
+# 2. Compilar el monorepo
+cd ../../jobby && ./mvnw clean install
+
+# 3. Ejecutar el primer servicio
+cd user-service && ../mvnw spring-boot:run
+```
+
+Luego abre `http://localhost:8080/swagger-ui.html` y `http://localhost:3000` (Grafana).
+
+Instrucciones completas, tabla de puertos y solución de problemas: [`docs/guides/local-setup.md`](docs/guides/local-setup.md).
 
 ### Documentación técnica
 
-El directorio [`docs/`](docs/) contiene ADRs, guías de patrones, documentación por servicio y una serie de artículos técnicos publicados progresivamente. Ver [`docs/articles/`](docs/articles/).
+El directorio [`docs/`](docs/README.md) contiene ADRs (39 decisiones documentadas), guías de patrones aplicados al codebase real, la definición del proyecto (visión, alcance, principios, roadmap) y una serie de artículos técnicos publicados progresivamente con su estrategia de contenido completa.
 
 ### Contribuciones
 
-Si trabajas con facturación electrónica en Colombia o tienes experiencia en el dominio, tu aporte es especialmente valioso. Abre un [Issue](https://github.com/[tu-usuario]/jobby-erp/issues) o una [Discussion](https://github.com/[tu-usuario]/jobby-erp/discussions) para comenzar.
+Si trabajas con facturación electrónica en Colombia o tienes experiencia en el dominio, tu aporte es especialmente valioso. Abre un [Issue](https://github.com/AmpolStack/jobby-erp-backend/issues) o una [Discussion](https://github.com/AmpolStack/jobby-erp-backend/discussions) para comenzar.

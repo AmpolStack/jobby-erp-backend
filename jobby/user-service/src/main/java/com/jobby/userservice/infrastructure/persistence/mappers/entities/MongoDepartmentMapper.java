@@ -13,6 +13,4 @@ public interface MongoDepartmentMapper {
                 entity.getName(),
                 entity.getDaneCode());
     }
-
-    MongoDepartmentEntity toEntity(Department domain);
 }

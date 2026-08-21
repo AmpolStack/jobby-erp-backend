@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "app.logging.loki-url",
+      "type": "java.lang.String",
+      "description": "Loki push endpoint URL for log aggregation (Loki4j appender).",
+      "defaultValue": "http://localhost:3100/loki/api/v1/push"
+    }
+  ]
+}
