@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "EmailChangeRequestSchema",
+  "namespace": "com.jobby.userservice.events",
+  "fields": [
+    {
+      "name": "email",
+      "type": "bytes"
+    },
+    {
+      "name": "code",
+      "type": "string"
+    }
+  ]
+}
