@@ -1,8 +1,8 @@
 package com.jobby.userservice.application.mappers;
 
-import com.jobby.userservice.domain.contract.responses.ContactResponse;
-import com.jobby.userservice.domain.contract.responses.OwnerResponse;
-import com.jobby.userservice.domain.contract.responses.UserResponse;
+import com.jobby.userservice.application.responses.ContactResponse;
+import com.jobby.userservice.application.responses.OwnerResponse;
+import com.jobby.userservice.application.responses.UserResponse;
 import com.jobby.userservice.domain.models.entity.Contact;
 import com.jobby.userservice.domain.models.aggregate.Owner;
 import com.jobby.userservice.domain.models.aggregate.User;
@@ -47,7 +47,7 @@ public abstract class ResponseMapper {
         if (owner == null) return null;
         return new OwnerResponse(
                 this.toResponse(user),
-                owner.getRecoveryEmail() != null ? owner.getRecoveryEmail().getEmail() : null
+                owner.getAlternativeEmail() != null ? owner.getAlternativeEmail().getEmail() : null
         );
     }
 }

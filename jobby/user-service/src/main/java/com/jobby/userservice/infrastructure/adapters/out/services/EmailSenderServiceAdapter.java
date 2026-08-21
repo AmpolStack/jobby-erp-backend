@@ -4,6 +4,7 @@ import com.jobby.domain.mobility.error.Error;
 import com.jobby.domain.mobility.result.Result;
 import com.jobby.domain.ports.EmailService;
 import com.jobby.userservice.domain.models.vo.shared.Email;
+import com.jobby.userservice.domain.models.vo.shared.Name;
 import com.jobby.userservice.domain.ports.out.services.EmailSenderService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,17 @@ public class EmailSenderServiceAdapter implements EmailSenderService {
     private static final int EXPIRATION_TIME = 5;
 
     @Override
-    public Result<Void, Error> sendWelcomeEmail() {
-        return null;
+    public Result<Void, Error> sendWelcomeEmail(Email to, Name name){
+        return this.templateLoader.load("welcome-owner.html")
+                .flatMap(content -> {
+                    content = content.replace("{{name}}", name.getValue());
+
+                    return this.emailService
+                            .send(ORIGIN_EMAIL,
+                                    to.getEmail(),
+                                    "Welcome to Jobby",
+                                    content);
+                });
     }
 
     @Override
